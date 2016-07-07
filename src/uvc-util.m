@@ -1,13 +1,15 @@
 //
-//  uvc-util.m
+// uvc-util.m
 //
-//  The utility program that makes use of the UVCController class to handle
-//  introspection and interaction with software controls exposed by UVC-compliant
-//  USB video devices.
+// The utility program that makes use of the UVCController class to handle
+// introspection and interaction with software controls exposed by UVC-compliant
+// USB video devices.
 //
-//  Copyright © 2016
-//  Dr. Jeffrey Frey, IT-NSS
-//  University of Delaware
+// Copyright © 2016
+// Dr. Jeffrey Frey, IT-NSS
+// University of Delaware
+//
+// $Id$
 //
 
 #import <Foundation/Foundation.h>
