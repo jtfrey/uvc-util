@@ -295,12 +295,10 @@ main(
   //
   // No CLI arguments, we've got nothing to do:
   //
-@autoreleasepool {
   if ( argc == 1 ) {
     usage(argv[0]);
     return 0;
   }
-}
 
 @autoreleasepool {
   while ( (optCh = getopt_long(argc, argv, "dcS:s:g:o:r0V:L:N:I:khfFvD", uvcUtilOptions, NULL)) != -1 ) {
