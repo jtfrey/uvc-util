@@ -1,0 +1,365 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3B79C7811D245ED5004A5C35 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B79C7801D245ED5004A5C35 /* IOKit.framework */; };
+		3BB7CF8E1D2ED005009D6F42 /* uvc-util.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BB7CF871D2ED005009D6F42 /* uvc-util.m */; };
+		3BB7CF8F1D2ED005009D6F42 /* uvc-util.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BB7CF871D2ED005009D6F42 /* uvc-util.m */; };
+		3BB7CF901D2ED005009D6F42 /* UVCController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BB7CF891D2ED005009D6F42 /* UVCController.m */; };
+		3BB7CF911D2ED005009D6F42 /* UVCController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BB7CF891D2ED005009D6F42 /* UVCController.m */; };
+		3BB7CF921D2ED005009D6F42 /* UVCType.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BB7CF8B1D2ED005009D6F42 /* UVCType.m */; };
+		3BB7CF931D2ED005009D6F42 /* UVCType.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BB7CF8B1D2ED005009D6F42 /* UVCType.m */; };
+		3BB7CF941D2ED005009D6F42 /* UVCValue.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BB7CF8D1D2ED005009D6F42 /* UVCValue.m */; };
+		3BB7CF951D2ED005009D6F42 /* UVCValue.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BB7CF8D1D2ED005009D6F42 /* UVCValue.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		3B79C7731D245EAD004A5C35 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		3B7C3E191D2C384100122FB8 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		3B79C7751D245EAD004A5C35 /* uvc-util */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "uvc-util"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3B79C7801D245ED5004A5C35 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = ../../../../System/Library/Frameworks/IOKit.framework; sourceTree = "<group>"; };
+		3B7C3E1B1D2C384100122FB8 /* uvc-util-10_9 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "uvc-util-10_9"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3BB7CF871D2ED005009D6F42 /* uvc-util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "uvc-util.m"; path = "src/uvc-util.m"; sourceTree = SOURCE_ROOT; };
+		3BB7CF881D2ED005009D6F42 /* UVCController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UVCController.h; path = src/UVCController.h; sourceTree = SOURCE_ROOT; };
+		3BB7CF891D2ED005009D6F42 /* UVCController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UVCController.m; path = src/UVCController.m; sourceTree = SOURCE_ROOT; };
+		3BB7CF8A1D2ED005009D6F42 /* UVCType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UVCType.h; path = src/UVCType.h; sourceTree = SOURCE_ROOT; };
+		3BB7CF8B1D2ED005009D6F42 /* UVCType.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UVCType.m; path = src/UVCType.m; sourceTree = SOURCE_ROOT; };
+		3BB7CF8C1D2ED005009D6F42 /* UVCValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UVCValue.h; path = src/UVCValue.h; sourceTree = SOURCE_ROOT; };
+		3BB7CF8D1D2ED005009D6F42 /* UVCValue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UVCValue.m; path = src/UVCValue.m; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3B79C7721D245EAD004A5C35 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3B79C7811D245ED5004A5C35 /* IOKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3B7C3E181D2C384100122FB8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3B79C76C1D245EAD004A5C35 = {
+			isa = PBXGroup;
+			children = (
+				3B79C77F1D245EB7004A5C35 /* Frameworks */,
+				3B79C7771D245EAD004A5C35 /* src */,
+				3B79C7761D245EAD004A5C35 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		3B79C7761D245EAD004A5C35 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3B79C7751D245EAD004A5C35 /* uvc-util */,
+				3B7C3E1B1D2C384100122FB8 /* uvc-util-10_9 */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3B79C7771D245EAD004A5C35 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				3BB7CF871D2ED005009D6F42 /* uvc-util.m */,
+				3BB7CF881D2ED005009D6F42 /* UVCController.h */,
+				3BB7CF891D2ED005009D6F42 /* UVCController.m */,
+				3BB7CF8A1D2ED005009D6F42 /* UVCType.h */,
+				3BB7CF8B1D2ED005009D6F42 /* UVCType.m */,
+				3BB7CF8C1D2ED005009D6F42 /* UVCValue.h */,
+				3BB7CF8D1D2ED005009D6F42 /* UVCValue.m */,
+			);
+			name = src;
+			path = "uvc-util";
+			sourceTree = "<group>";
+		};
+		3B79C77F1D245EB7004A5C35 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3B79C7801D245ED5004A5C35 /* IOKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3B79C7741D245EAD004A5C35 /* uvc-util */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3B79C77C1D245EAD004A5C35 /* Build configuration list for PBXNativeTarget "uvc-util" */;
+			buildPhases = (
+				3B79C7711D245EAD004A5C35 /* Sources */,
+				3B79C7721D245EAD004A5C35 /* Frameworks */,
+				3B79C7731D245EAD004A5C35 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "uvc-util";
+			productName = "uvc-util";
+			productReference = 3B79C7751D245EAD004A5C35 /* uvc-util */;
+			productType = "com.apple.product-type.tool";
+		};
+		3B7C3E1A1D2C384100122FB8 /* uvc-util-10_9 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3B7C3E1F1D2C384100122FB8 /* Build configuration list for PBXNativeTarget "uvc-util-10_9" */;
+			buildPhases = (
+				3B7C3E171D2C384100122FB8 /* Sources */,
+				3B7C3E181D2C384100122FB8 /* Frameworks */,
+				3B7C3E191D2C384100122FB8 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "uvc-util-10_9";
+			productName = "uvc-util-10_9";
+			productReference = 3B7C3E1B1D2C384100122FB8 /* uvc-util-10_9 */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3B79C76D1D245EAD004A5C35 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0730;
+				ORGANIZATIONNAME = "IT-NSS University of Delaware";
+				TargetAttributes = {
+					3B79C7741D245EAD004A5C35 = {
+						CreatedOnToolsVersion = 7.3;
+					};
+					3B7C3E1A1D2C384100122FB8 = {
+						CreatedOnToolsVersion = 7.3;
+					};
+				};
+			};
+			buildConfigurationList = 3B79C7701D245EAD004A5C35 /* Build configuration list for PBXProject "uvc-util" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 3B79C76C1D245EAD004A5C35;
+			productRefGroup = 3B79C7761D245EAD004A5C35 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3B79C7741D245EAD004A5C35 /* uvc-util */,
+				3B7C3E1A1D2C384100122FB8 /* uvc-util-10_9 */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3B79C7711D245EAD004A5C35 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3BB7CF941D2ED005009D6F42 /* UVCValue.m in Sources */,
+				3BB7CF901D2ED005009D6F42 /* UVCController.m in Sources */,
+				3BB7CF8E1D2ED005009D6F42 /* uvc-util.m in Sources */,
+				3BB7CF921D2ED005009D6F42 /* UVCType.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3B7C3E171D2C384100122FB8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3BB7CF951D2ED005009D6F42 /* UVCValue.m in Sources */,
+				3BB7CF911D2ED005009D6F42 /* UVCController.m in Sources */,
+				3BB7CF8F1D2ED005009D6F42 /* uvc-util.m in Sources */,
+				3BB7CF931D2ED005009D6F42 /* UVCType.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		3B79C77A1D245EAD004A5C35 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		3B79C77B1D245EAD004A5C35 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		3B79C77D1D245EAD004A5C35 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		3B79C77E1D245EAD004A5C35 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		3B7C3E201D2C384100122FB8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_LINK_OBJC_RUNTIME = NO;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx10.9;
+			};
+			name = Debug;
+		};
+		3B7C3E211D2C384100122FB8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_LINK_OBJC_RUNTIME = NO;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx10.9;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3B79C7701D245EAD004A5C35 /* Build configuration list for PBXProject "uvc-util" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3B79C77A1D245EAD004A5C35 /* Debug */,
+				3B79C77B1D245EAD004A5C35 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3B79C77C1D245EAD004A5C35 /* Build configuration list for PBXNativeTarget "uvc-util" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3B79C77D1D245EAD004A5C35 /* Debug */,
+				3B79C77E1D245EAD004A5C35 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3B7C3E1F1D2C384100122FB8 /* Build configuration list for PBXNativeTarget "uvc-util-10_9" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3B7C3E201D2C384100122FB8 /* Debug */,
+				3B7C3E211D2C384100122FB8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 3B79C76D1D245EAD004A5C35 /* Project object */;
+}
