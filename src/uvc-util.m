@@ -326,7 +326,7 @@ main(
       }
       
       case 'd': {
-        if ( ! uvcDevices ) uvcDevices = [UVCController uvcControllers];
+        if ( ! uvcDevices ) uvcDevices = [[UVCController uvcControllers] retain];
         if ( uvcDevices && [uvcDevices count] ) {
           NSEnumerator    *eDevices = [uvcDevices objectEnumerator];
           UVCController   *device;
