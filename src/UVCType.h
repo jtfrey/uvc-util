@@ -27,10 +27,13 @@ typedef enum {
   kUVCTypeComponentTypeBitmap8,
   kUVCTypeComponentTypeSInt16,
   kUVCTypeComponentTypeUInt16,
+  kUVCTypeComponentTypeBitmap16,
   kUVCTypeComponentTypeSInt32,
   kUVCTypeComponentTypeUInt32,
+  kUVCTypeComponentTypeBitmap32,
   kUVCTypeComponentTypeSInt64,
   kUVCTypeComponentTypeUInt64,
+  kUVCTypeComponentTypeBitmap64,
   kUVCTypeComponentTypeMax
 } UVCTypeComponentType;
 
@@ -112,12 +115,16 @@ typedef enum {
     B         UInt8, accepting only 0 and 1
     S1        SInt8 / char
     U1        UInt8 / unsigned char
+    M1        UInt8 / unsigned char as a bitmap
     S2        SInt16 / short
     U2        UInt16 / unsigned short
+    M2        UInt16 / unsigned short as a bitmap
     S4        SInt32 / int
     U4        UInt32 / unsigned int
+    M4        UInt32 / unsigned int as a bitmap
     S8        SInt64 / long long int
     U8        UInt64 / unsigned long long int
+    M8        UInt64 / unsigned long long int as a bitmap
   
   For types with a single field, the [name] can be omitted:
   

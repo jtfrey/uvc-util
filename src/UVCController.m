@@ -84,8 +84,11 @@ enum {
   kUVCTerminalControlEnablePanTiltRelative        = 12,
   kUVCTerminalControlEnableRollAbsolute           = 13,
   kUVCTerminalControlEnableRollRelative           = 14,
-  kUVCTerminalControlEnableAutoFocus              = 17,
-  kUVCTerminalControlEnablePrivacy                = 18
+  kUVCTerminalControlEnableFocusAuto              = 17,
+  kUVCTerminalControlEnablePrivacy                = 18,
+  kUVCTerminalControlEnableFocusSimple            = 19,
+  kUVCTerminalControlEnableWindow                 = 20,
+  kUVCTerminalControlEnableRegionOfInterest       = 21
 };
 
 typedef struct {
@@ -126,7 +129,8 @@ enum {
   kUVCProcessingUnitControlEnableDigitalMultiplier            = 14,
   kUVCProcessingUnitControlEnableDigitalMultiplierLimit       = 15,
   kUVCProcessingUnitControlEnableAnalogVideoStandard          = 16,
-  kUVCProcessingUnitControlEnableAnalogVideoLockStatus        = 17
+  kUVCProcessingUnitControlEnableAnalogVideoLockStatus        = 17,
+  kUVCProcessingUnitControlEnableAutoContrast                 = 18
 };
 
 //
@@ -163,6 +167,9 @@ enum {
 #define CT_ROLL_ABSOLUTE_CONTROL                  0x0f
 #define CT_ROLL_RELATIVE_CONTROL                  0x10
 #define CT_PRIVACY_CONTROL                        0x11
+#define CT_FOCUS_SIMPLE_CONTROL                   0x12
+#define CT_WINDOW_CONTROL                         0x13
+#define CT_REGION_OF_INTEREST_CONTROL             0x14
 
 //
 // Processing-unit controls:
@@ -187,6 +194,7 @@ enum {
 #define PU_HUE_AUTO_CONTROL                       0x10
 #define PU_ANALOG_VIDEO_STANDARD_CONTROL          0x11
 #define PU_ANALOG_LOCK_STATUS_CONTROL             0x12
+#define PU_CONTRAST_AUTO_CONTROL                  0x13
 
 /*!
   @enum UVC control capabilities
@@ -282,7 +290,7 @@ typedef struct {
 */
 uvc_control_t     UVCControllerControls[] = {
                       UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_SCANNING_MODE_CONTROL, "{B}"),
-                      UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_AE_MODE_CONTROL, "{M}"),
+                      UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_AE_MODE_CONTROL, "{M1}"),
                       UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_AE_PRIORITY_CONTROL, "{U1}"),
                       UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_EXPOSURE_TIME_ABSOLUTE_CONTROL, "{U4}"),
                       UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_EXPOSURE_TIME_RELATIVE_CONTROL, "{S1}"),
@@ -298,6 +306,9 @@ uvc_control_t     UVCControllerControls[] = {
                       UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_ROLL_ABSOLUTE_CONTROL, "{S2}"),
                       UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_ROLL_RELATIVE_CONTROL, "{S1 roll-relative; U1 roll-speed}"),
                       UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_PRIVACY_CONTROL, "{B}"),
+                      UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_FOCUS_SIMPLE_CONTROL, "{U1}"),
+                      UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_WINDOW_CONTROL, "{U2 window-top; U2 window-left; U2 window-bottom; U2 window-right; U2 num-steps; M2 num-steps-units}"),
+                      UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_REGION_OF_INTEREST_CONTROL, "{U2 roi-top; U2 roi-left; U2 roi-bottom; U2 roi-right; M2 auto-controls}"),
                       //
                       UVC_CONTROL_INIT(UVC_PROCESSING_UNIT_ID, PU_BACKLIGHT_COMPENSATION_CONTROL, "{U2}"),
                       UVC_CONTROL_INIT(UVC_PROCESSING_UNIT_ID, PU_BRIGHTNESS_CONTROL, "{S2}"),
@@ -316,7 +327,8 @@ uvc_control_t     UVCControllerControls[] = {
                       UVC_CONTROL_INIT(UVC_PROCESSING_UNIT_ID, PU_DIGITAL_MULTIPLIER_LIMIT_CONTROL, "{U2}"),
                       UVC_CONTROL_INIT(UVC_PROCESSING_UNIT_ID, PU_HUE_AUTO_CONTROL,"{B}"),
                       UVC_CONTROL_INIT(UVC_PROCESSING_UNIT_ID, PU_ANALOG_VIDEO_STANDARD_CONTROL, "{U1}"),
-                      UVC_CONTROL_INIT(UVC_PROCESSING_UNIT_ID, PU_ANALOG_LOCK_STATUS_CONTROL, "{U1}")
+                      UVC_CONTROL_INIT(UVC_PROCESSING_UNIT_ID, PU_ANALOG_LOCK_STATUS_CONTROL, "{U1}"),
+                      UVC_CONTROL_INIT(UVC_PROCESSING_UNIT_ID, PU_CONTRAST_AUTO_CONTROL, "{U1}")
                     };
 
 /*!
@@ -552,25 +564,29 @@ uvc_control_t     UVCControllerControls[] = {
                                   [NSNumber numberWithInt:14], UVCTerminalControlRollAbsolute,
                                   [NSNumber numberWithInt:15], UVCTerminalControlRollRelative,
                                   [NSNumber numberWithInt:16], UVCTerminalControlPrivacy,
+                                  [NSNumber numberWithInt:17], UVCTerminalControlFocusSimple,
+                                  [NSNumber numberWithInt:18], UVCTerminalControlWindow,
+                                  [NSNumber numberWithInt:19], UVCTerminalControlRegionOfInterest,
 
-                                  [NSNumber numberWithInt:17], UVCProcessingUnitControlBacklightCompensation,
-                                  [NSNumber numberWithInt:18], UVCProcessingUnitControlBrightness,
-                                  [NSNumber numberWithInt:19], UVCProcessingUnitControlContrast,
-                                  [NSNumber numberWithInt:20], UVCProcessingUnitControlGain,
-                                  [NSNumber numberWithInt:21], UVCProcessingUnitControlPowerLineFrequency,
-                                  [NSNumber numberWithInt:22], UVCProcessingUnitControlHue,
-                                  [NSNumber numberWithInt:23], UVCProcessingUnitControlSaturation,
-                                  [NSNumber numberWithInt:24], UVCProcessingUnitControlSharpness,
-                                  [NSNumber numberWithInt:25], UVCProcessingUnitControlGamma,
-                                  [NSNumber numberWithInt:26], UVCProcessingUnitControlWhiteBalanceTemperature,
-                                  [NSNumber numberWithInt:27], UVCProcessingUnitControlAutoWhiteBalanceTemperature,
-                                  [NSNumber numberWithInt:28], UVCProcessingUnitControlWhiteBalanceComponent,
-                                  [NSNumber numberWithInt:29], UVCProcessingUnitControlAutoWhiteBalanceComponent,
-                                  [NSNumber numberWithInt:30], UVCProcessingUnitControlDigitalMultiplier,
-                                  [NSNumber numberWithInt:31], UVCProcessingUnitControlDigitalMultiplierLimit,
-                                  [NSNumber numberWithInt:32], UVCProcessingUnitControlAutoHue,
-                                  [NSNumber numberWithInt:33], UVCProcessingUnitControlAnalogVideoStandard,
-                                  [NSNumber numberWithInt:34], UVCProcessingUnitControlAnalogLockStatus,
+                                  [NSNumber numberWithInt:20], UVCProcessingUnitControlBacklightCompensation,
+                                  [NSNumber numberWithInt:21], UVCProcessingUnitControlBrightness,
+                                  [NSNumber numberWithInt:22], UVCProcessingUnitControlContrast,
+                                  [NSNumber numberWithInt:23], UVCProcessingUnitControlGain,
+                                  [NSNumber numberWithInt:24], UVCProcessingUnitControlPowerLineFrequency,
+                                  [NSNumber numberWithInt:25], UVCProcessingUnitControlHue,
+                                  [NSNumber numberWithInt:26], UVCProcessingUnitControlSaturation,
+                                  [NSNumber numberWithInt:27], UVCProcessingUnitControlSharpness,
+                                  [NSNumber numberWithInt:28], UVCProcessingUnitControlGamma,
+                                  [NSNumber numberWithInt:29], UVCProcessingUnitControlWhiteBalanceTemperature,
+                                  [NSNumber numberWithInt:30], UVCProcessingUnitControlAutoWhiteBalanceTemperature,
+                                  [NSNumber numberWithInt:31], UVCProcessingUnitControlWhiteBalanceComponent,
+                                  [NSNumber numberWithInt:32], UVCProcessingUnitControlAutoWhiteBalanceComponent,
+                                  [NSNumber numberWithInt:33], UVCProcessingUnitControlDigitalMultiplier,
+                                  [NSNumber numberWithInt:34], UVCProcessingUnitControlDigitalMultiplierLimit,
+                                  [NSNumber numberWithInt:35], UVCProcessingUnitControlAutoHue,
+                                  [NSNumber numberWithInt:36], UVCProcessingUnitControlAnalogVideoStandard,
+                                  [NSNumber numberWithInt:37], UVCProcessingUnitControlAnalogLockStatus,
+                                  [NSNumber numberWithInt:38], UVCProcessingUnitControlAutoContrast,
                                   nil
                                 ];
     }
@@ -596,7 +612,6 @@ uvc_control_t     UVCControllerControls[] = {
                                               [NSNumber numberWithInt:kUVCTerminalControlEnableExposureTimeRelative], UVCTerminalControlExposureTimeRelative,
                                               [NSNumber numberWithInt:kUVCTerminalControlEnableFocusAbsolute], UVCTerminalControlFocusAbsolute,
                                               [NSNumber numberWithInt:kUVCTerminalControlEnableFocusRelative], UVCTerminalControlFocusRelative,
-                                              [NSNumber numberWithInt:kUVCTerminalControlEnableAutoFocus], UVCTerminalControlAutoFocus,
                                               [NSNumber numberWithInt:kUVCTerminalControlEnableIrisAbsolute], UVCTerminalControlIrisAbsolute,
                                               [NSNumber numberWithInt:kUVCTerminalControlEnableIrisRelative], UVCTerminalControlIrisRelative,
                                               [NSNumber numberWithInt:kUVCTerminalControlEnableZoomAbsolute], UVCTerminalControlZoomAbsolute,
@@ -605,7 +620,11 @@ uvc_control_t     UVCControllerControls[] = {
                                               [NSNumber numberWithInt:kUVCTerminalControlEnablePanTiltRelative], UVCTerminalControlPanTiltRelative,
                                               [NSNumber numberWithInt:kUVCTerminalControlEnableRollAbsolute], UVCTerminalControlRollAbsolute,
                                               [NSNumber numberWithInt:kUVCTerminalControlEnableRollRelative], UVCTerminalControlRollRelative,
+                                              [NSNumber numberWithInt:kUVCTerminalControlEnableFocusAuto], UVCTerminalControlAutoFocus,
                                               [NSNumber numberWithInt:kUVCTerminalControlEnablePrivacy], UVCTerminalControlPrivacy,
+                                              [NSNumber numberWithInt:kUVCTerminalControlEnableFocusSimple], UVCTerminalControlFocusSimple,
+                                              [NSNumber numberWithInt:kUVCTerminalControlEnableWindow], UVCTerminalControlWindow,
+                                              [NSNumber numberWithInt:kUVCTerminalControlEnableRegionOfInterest], UVCTerminalControlRegionOfInterest,
                                               nil
                                             ];
     }
@@ -642,6 +661,7 @@ uvc_control_t     UVCControllerControls[] = {
                                                     [NSNumber numberWithInt:kUVCProcessingUnitControlEnableDigitalMultiplierLimit], UVCProcessingUnitControlDigitalMultiplierLimit,
                                                     [NSNumber numberWithInt:kUVCProcessingUnitControlEnableAnalogVideoStandard], UVCProcessingUnitControlAnalogVideoStandard,
                                                     [NSNumber numberWithInt:kUVCProcessingUnitControlEnableAnalogVideoLockStatus], UVCProcessingUnitControlAnalogLockStatus,
+                                                    [NSNumber numberWithInt:kUVCProcessingUnitControlEnableAutoContrast], UVCProcessingUnitControlAutoContrast,
                                                     nil
                                                   ];
     }
@@ -1483,7 +1503,10 @@ uvc_control_t     UVCControllerControls[] = {
     if ( [self hasDefaultValue] ) {
       [asString appendFormat:@"\n  default-value: %@", [_defaultValue stringValue]];
     }
-    [asString appendFormat:@"\n  current-value: %@", [[self currentValue]  stringValue]];      
+    
+    UVCValue    *curValue = [self currentValue];
+    if ( curValue ) [asString appendFormat:@"\n  current-value: %@", [curValue stringValue]]; 
+    
     [asString appendString:@"\n}"];
     
     NSString      *outString = [[asString copy] autorelease];
@@ -1513,6 +1536,11 @@ NSString *UVCTerminalControlPanTiltRelative = @"pan-tilt-rel";
 NSString *UVCTerminalControlRollAbsolute = @"roll-abs";
 NSString *UVCTerminalControlRollRelative = @"roll-rel";
 NSString *UVCTerminalControlPrivacy = @"privacy";
+NSString *UVCTerminalControlFocusSimple = @"focus-simple";
+NSString *UVCTerminalControlWindow = @"window";
+NSString *UVCTerminalControlRegionOfInterest = @"region-of-interest";
+
+//
 
 NSString *UVCProcessingUnitControlBacklightCompensation = @"backlight-compensation";
 NSString *UVCProcessingUnitControlBrightness = @"brightness";
@@ -1532,3 +1560,5 @@ NSString *UVCProcessingUnitControlDigitalMultiplierLimit = @"digital-multiplier-
 NSString *UVCProcessingUnitControlAutoHue = @"auto-hue";
 NSString *UVCProcessingUnitControlAnalogVideoStandard = @"analog-video-standard";
 NSString *UVCProcessingUnitControlAnalogLockStatus = @"analog-lock-status";
+NSString *UVCProcessingUnitControlAutoContrast = @"contrast-auto-control";
+

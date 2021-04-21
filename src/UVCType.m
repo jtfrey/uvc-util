@@ -28,10 +28,13 @@ UVCTypeComponentByteSize(UVCTypeComponentType componentType)
                         1,
                         2,
                         2,
+                        2,
+                        4,
                         4,
                         4,
                         8,
                         8,
+                        8
                       };
   if ( componentType < kUVCTypeComponentTypeMax ) return byteSizes[componentType];
   return 0;
@@ -47,13 +50,16 @@ __UVCTypeComponentTypeString(UVCTypeComponentType componentType)
                         "B",
                         "S1",
                         "U1",
-                        "M"
+                        "M1"
                         "S2",
                         "U2",
+                        "M2",
                         "S4",
                         "U4",
+                        "M4",
                         "S8",
                         "U8",
+                        "M8"
                       };
   if ( componentType < kUVCTypeComponentTypeMax ) return typeStrings[componentType];
   return 0;
@@ -72,10 +78,13 @@ __UVCTypeComponentVerboseTypeString(UVCTypeComponentType componentType)
                         "unsigned 8-bit bitmap",
                         "signed 16-bit integer",
                         "unsigned 16-bit integer",
+                        "unsigned 16-bit bitmap",
                         "signed 32-bit integer",
                         "unsigned 32-bit integer",
+                        "unsigned 32-bit bitmap",
                         "signed 64-bit integer",
                         "unsigned 64-bit integer",
+                        "unsigned 64-bit bitmap"
                       };
   if ( componentType < kUVCTypeComponentTypeMax ) return verboseTypeStrings[componentType];
   return 0;
@@ -99,15 +108,34 @@ __UVCTypeComponentTypeFromString(
   
   switch ( *typeDefString ) {
     
-    case 'B': {
+    case 'B':
+    case 'b': {
       outType = kUVCTypeComponentTypeBoolean;
       charConsumed++;
       break;
     }
     
-    case 'M': {
-      outType = kUVCTypeComponentTypeBitmap8;
+    case 'M':
+    case 'm': {
       charConsumed++;
+      switch ( *(typeDefString + 1) ) {
+        case '1':
+          outType = kUVCTypeComponentTypeBitmap8;
+          charConsumed++;
+          break;
+        case '2':
+          outType = kUVCTypeComponentTypeBitmap16;
+          charConsumed++;
+          break;
+        case '4':
+          outType = kUVCTypeComponentTypeBitmap32;
+          charConsumed++;
+          break;
+        case '8':
+          outType = kUVCTypeComponentTypeBitmap64;
+          charConsumed++;
+          break;
+      }
       break;
     }
     
@@ -216,6 +244,7 @@ __UVCTypeComponentTypeScanf(
         break;
       }
       
+      case kUVCTypeComponentTypeBitmap16:
       case kUVCTypeComponentTypeUInt16: {
         UInt16            *def = (UInt16*)theDefaultValue;
         
@@ -230,6 +259,7 @@ __UVCTypeComponentTypeScanf(
         break;
       }
       
+      case kUVCTypeComponentTypeBitmap32:
       case kUVCTypeComponentTypeUInt32:  {
         UInt32            *def = (UInt32*)theDefaultValue;
         
@@ -244,6 +274,7 @@ __UVCTypeComponentTypeScanf(
         break;
       }
       
+      case kUVCTypeComponentTypeBitmap64:
       case kUVCTypeComponentTypeUInt64:  {
         UInt64            *def = (UInt64*)theDefaultValue;
         
@@ -289,6 +320,7 @@ __UVCTypeComponentTypeScanf(
         break;
       }
       
+      case kUVCTypeComponentTypeBitmap16:
       case kUVCTypeComponentTypeUInt16: {
         UInt16            *def = (UInt16*)theMinimum;
         
@@ -303,6 +335,7 @@ __UVCTypeComponentTypeScanf(
         break;
       }
       
+      case kUVCTypeComponentTypeBitmap32:
       case kUVCTypeComponentTypeUInt32:  {
         UInt32            *def = (UInt32*)theMinimum;
         
@@ -317,6 +350,7 @@ __UVCTypeComponentTypeScanf(
         break;
       }
       
+      case kUVCTypeComponentTypeBitmap64:
       case kUVCTypeComponentTypeUInt64:  {
         UInt64            *def = (UInt64*)theMinimum;
         
@@ -362,6 +396,7 @@ __UVCTypeComponentTypeScanf(
         break;
       }
       
+      case kUVCTypeComponentTypeBitmap16:
       case kUVCTypeComponentTypeUInt16: {
         UInt16            *def = (UInt16*)theMaximum;
         
@@ -376,6 +411,7 @@ __UVCTypeComponentTypeScanf(
         break;
       }
       
+      case kUVCTypeComponentTypeBitmap32:
       case kUVCTypeComponentTypeUInt32:  {
         UInt32            *def = (UInt32*)theMaximum;
         
@@ -390,6 +426,7 @@ __UVCTypeComponentTypeScanf(
         break;
       }
       
+      case kUVCTypeComponentTypeBitmap64:
       case kUVCTypeComponentTypeUInt64:  {
         UInt64            *def = (UInt64*)theMaximum;
         
@@ -544,7 +581,6 @@ __UVCTypeComponentTypeScanf(
           }
           
           case kUVCTypeComponentTypeBoolean:
-          case kUVCTypeComponentTypeBitmap8:
           case kUVCTypeComponentTypeUInt8: {
             UInt8       *min = (UInt8*)theMinimum;
             UInt8       *max = (UInt8*)theMaximum;
@@ -563,6 +599,19 @@ __UVCTypeComponentTypeScanf(
                 }
               }
             }
+            *((UInt8*)theValue) = val;
+            break;
+          }
+          
+          case kUVCTypeComponentTypeBitmap8: {
+            UInt8       *min = (UInt8*)theMinimum;
+            UInt8       *max = (UInt8*)theMaximum;
+            UInt8       *res = (UInt8*)theStepSize;
+            UInt8       val = round(*min + fractionalValue * (*max - *min));
+            
+            // Mask to only the available bits:
+            if ( res ) val &= *res;
+            
             *((UInt8*)theValue) = val;
             break;
           }
@@ -611,6 +660,19 @@ __UVCTypeComponentTypeScanf(
             break;
           }
           
+          case kUVCTypeComponentTypeBitmap16: {
+            UInt16      *min = (UInt16*)theMinimum;
+            UInt16      *max = (UInt16*)theMaximum;
+            UInt16      *res = (UInt16*)theStepSize;
+            UInt16      val = round(*min + fractionalValue * (*max - *min));
+            
+            // Mask to only the available bits:
+            if ( res ) val &= *res;
+            
+            *((UInt16*)theValue) = val;
+            break;
+          }
+          
           case kUVCTypeComponentTypeSInt32: {
             SInt32      *min = (SInt32*)theMinimum;
             SInt32      *max = (SInt32*)theMaximum;
@@ -655,6 +717,19 @@ __UVCTypeComponentTypeScanf(
             break;
           }
           
+          case kUVCTypeComponentTypeBitmap32: {
+            UInt32      *min = (UInt32*)theMinimum;
+            UInt32      *max = (UInt32*)theMaximum;
+            UInt32      *res = (UInt32*)theStepSize;
+            UInt32      val = round(*min + fractionalValue * (*max - *min));
+            
+            // Mask to only the available bits:
+            if ( res ) val &= *res;
+            
+            *((UInt32*)theValue) = val;
+            break;
+          }
+          
           case kUVCTypeComponentTypeSInt64: {
             SInt64      *min = (SInt64*)theMinimum;
             SInt64      *max = (SInt64*)theMaximum;
@@ -695,6 +770,19 @@ __UVCTypeComponentTypeScanf(
                 }
               }
             }
+            *((UInt64*)theValue) = val;
+            break;
+          }
+          
+          case kUVCTypeComponentTypeBitmap64: {
+            UInt64      *min = (UInt64*)theMinimum;
+            UInt64      *max = (UInt64*)theMaximum;
+            UInt64      *res = (UInt64*)theStepSize;
+            UInt64      val = round(*min + fractionalValue * (*max - *min));
+            
+            // Mask to only the available bits:
+            if ( res ) val &= *res;
+            
             *((UInt64*)theValue) = val;
             break;
           }
@@ -755,18 +843,6 @@ __UVCTypeComponentTypeScanf(
         break;
       }
       
-        case kUVCTypeComponentTypeBitmap8: {          
-          UInt8       val;
-          
-          if ( sscanf(cString, "%hhi%n", &val, &n) == 1 ) {
-            *((UInt8*)theValue) = val;
-            rc = true;
-          } else {
-            if ( (flags & kUVCTypeScanFlagShowWarnings) ) fprintf(stderr, "WARNING: Unable to scan integer/bitmap value at '%s'\n", cString);
-          }
-          break;
-        }
-      
       case kUVCTypeComponentTypeBoolean: {
         UInt8       val;
         
@@ -785,7 +861,7 @@ __UVCTypeComponentTypeScanf(
         UInt8       *res = (UInt8*)theStepSize;
         UInt8       val;
         
-        if ( sscanf(cString, "%hhi%n", &val, &n) == 1 ) {
+        if ( sscanf(cString, "%hhu%n", &val, &n) == 1 ) {
           // Check against ranges:
           if ( min && (val < *min) ) val = *min;
           else if ( max && (val > *max) ) val = *max;
@@ -806,6 +882,28 @@ __UVCTypeComponentTypeScanf(
           rc = true;
         } else {
           if ( (flags & kUVCTypeScanFlagShowWarnings) ) fprintf(stderr, "WARNING: Unable to scan integer value at '%s'\n", cString);
+        }
+        break;
+      }
+      
+      case kUVCTypeComponentTypeBitmap8: {
+        UInt8       *min = (UInt8*)theMinimum;
+        UInt8       *max = (UInt8*)theMaximum;
+        UInt8       *res = (UInt8*)theStepSize;
+        UInt8       val;
+        
+        if ( sscanf(cString, "%hhu%n", &val, &n) == 1 ) {
+          // Check against ranges:
+          if ( min && (val < *min) ) val = *min;
+          else if ( max && (val > *max) ) val = *max;
+          
+          // Mask to available bits only:
+          if ( res ) val &= *res;
+          
+          *((UInt8*)theValue) = val;
+          rc = true;
+        } else {
+          if ( (flags & kUVCTypeScanFlagShowWarnings) ) fprintf(stderr, "WARNING: Unable to scan bitmap value at '%s'\n", cString);
         }
         break;
       }
@@ -849,7 +947,7 @@ __UVCTypeComponentTypeScanf(
         UInt16      *res = (UInt16*)theStepSize;
         UInt16      val;
         
-        if ( sscanf(cString, "%hi%n", &val, &n) == 1 ) {
+        if ( sscanf(cString, "%hu%n", &val, &n) == 1 ) {
           // Check against ranges:
           if ( min && (val < *min) ) val = *min;
           else if ( max && (val > *max) ) val = *max;
@@ -870,6 +968,28 @@ __UVCTypeComponentTypeScanf(
           rc = true;
         } else {
           if ( (flags & kUVCTypeScanFlagShowWarnings) ) fprintf(stderr, "WARNING: Unable to scan integer value at '%s'\n", cString);
+        }
+        break;
+      }
+      
+      case kUVCTypeComponentTypeBitmap16: {
+        UInt16      *min = (UInt16*)theMinimum;
+        UInt16      *max = (UInt16*)theMaximum;
+        UInt16      *res = (UInt16*)theStepSize;
+        UInt16      val;
+        
+        if ( sscanf(cString, "%hu%n", &val, &n) == 1 ) {
+          // Check against ranges:
+          if ( min && (val < *min) ) val = *min;
+          else if ( max && (val > *max) ) val = *max;
+          
+          // Mask to available bits only:
+          if ( res ) val &= *res;
+          
+          *((UInt16*)theValue) = val;
+          rc = true;
+        } else {
+          if ( (flags & kUVCTypeScanFlagShowWarnings) ) fprintf(stderr, "WARNING: Unable to scan bitmap value at '%s'\n", cString);
         }
         break;
       }
@@ -913,7 +1033,7 @@ __UVCTypeComponentTypeScanf(
         UInt32      *res = (UInt32*)theStepSize;
         UInt32      val;
         
-        if ( sscanf(cString, "%i%n", &val, &n) == 1 ) {
+        if ( sscanf(cString, "%u%n", &val, &n) == 1 ) {
           // Check against ranges:
           if ( min && (val < *min) ) val = *min;
           else if ( max && (val > *max) ) val = *max;
@@ -934,6 +1054,28 @@ __UVCTypeComponentTypeScanf(
           rc = true;
         } else {
           if ( (flags & kUVCTypeScanFlagShowWarnings) ) fprintf(stderr, "WARNING: Unable to scan integer value at '%s'\n", cString);
+        }
+        break;
+      }
+      
+      case kUVCTypeComponentTypeBitmap32: {
+        UInt32      *min = (UInt32*)theMinimum;
+        UInt32      *max = (UInt32*)theMaximum;
+        UInt32      *res = (UInt32*)theStepSize;
+        UInt32      val;
+        
+        if ( sscanf(cString, "%u%n", &val, &n) == 1 ) {
+          // Check against ranges:
+          if ( min && (val < *min) ) val = *min;
+          else if ( max && (val > *max) ) val = *max;
+          
+          // Mask to available bits only:
+          if ( res ) val &= *res;
+          
+          *((UInt32*)theValue) = val;
+          rc = true;
+        } else {
+          if ( (flags & kUVCTypeScanFlagShowWarnings) ) fprintf(stderr, "WARNING: Unable to scan bitmap value at '%s'\n", cString);
         }
         break;
       }
@@ -975,7 +1117,7 @@ __UVCTypeComponentTypeScanf(
         UInt64      *res = (UInt64*)theStepSize;
         UInt64      val;
         
-        if ( sscanf(cString, "%lli%n", &val, &n) == 1 ) {
+        if ( sscanf(cString, "%llu%n", &val, &n) == 1 ) {
           // Check against ranges:
           if ( min && (val < *min) ) val = *min;
           else if ( max && (val > *max) ) val = *max;
@@ -996,6 +1138,28 @@ __UVCTypeComponentTypeScanf(
           rc = true;
         } else {
           if ( (flags & kUVCTypeScanFlagShowWarnings) ) fprintf(stderr, "WARNING: Unable to scan integer value at '%s'\n", cString);
+        }
+        break;
+      }
+      
+      case kUVCTypeComponentTypeBitmap64: {
+        UInt64      *min = (UInt64*)theMinimum;
+        UInt64      *max = (UInt64*)theMaximum;
+        UInt64      *res = (UInt64*)theStepSize;
+        UInt64      val;
+        
+        if ( sscanf(cString, "%llu%n", &val, &n) == 1 ) {
+          // Check against ranges:
+          if ( min && (val < *min) ) val = *min;
+          else if ( max && (val > *max) ) val = *max;
+          
+          // Mask to available bits only:
+          if ( res ) val &= *res;
+          
+          *((UInt64*)theValue) = val;
+          rc = true;
+        } else {
+          if ( (flags & kUVCTypeScanFlagShowWarnings) ) fprintf(stderr, "WARNING: Unable to scan bitmap value at '%s'\n", cString);
         }
         break;
       }
@@ -1418,7 +1582,8 @@ typedef struct {
           buffer++;
           break;
         case kUVCTypeComponentTypeSInt16:
-        case kUVCTypeComponentTypeUInt16: {
+        case kUVCTypeComponentTypeUInt16:
+        case kUVCTypeComponentTypeBitmap16: {
           UInt16   *asInt16Ptr = (UInt16*)buffer;
           
           *asInt16Ptr = NSSwapHostShortToLittle(*asInt16Ptr);
@@ -1426,7 +1591,8 @@ typedef struct {
           break;
         }
         case kUVCTypeComponentTypeSInt32:
-        case kUVCTypeComponentTypeUInt32: {
+        case kUVCTypeComponentTypeUInt32:
+        case kUVCTypeComponentTypeBitmap32: {
           UInt32   *asInt32Ptr = (UInt32*)buffer;
           
           *asInt32Ptr = NSSwapHostIntToLittle(*asInt32Ptr);
@@ -1434,7 +1600,8 @@ typedef struct {
           break;
         }
         case kUVCTypeComponentTypeSInt64:
-        case kUVCTypeComponentTypeUInt64: {
+        case kUVCTypeComponentTypeUInt64:
+        case kUVCTypeComponentTypeBitmap64: {
           UInt64   *asInt64Ptr = (UInt64*)buffer;
           
           *asInt64Ptr = NSSwapHostLongLongToLittle(*asInt64Ptr);
@@ -1468,7 +1635,8 @@ typedef struct {
           buffer++;
           break;
         case kUVCTypeComponentTypeSInt16:
-        case kUVCTypeComponentTypeUInt16: {
+        case kUVCTypeComponentTypeUInt16:
+        case kUVCTypeComponentTypeBitmap16: {
           UInt16   *asInt16Ptr = (UInt16*)buffer;
           
           *asInt16Ptr = NSSwapLittleShortToHost(*asInt16Ptr);
@@ -1476,7 +1644,8 @@ typedef struct {
           break;
         }
         case kUVCTypeComponentTypeSInt32:
-        case kUVCTypeComponentTypeUInt32: {
+        case kUVCTypeComponentTypeUInt32:
+        case kUVCTypeComponentTypeBitmap32: {
           UInt32   *asInt32Ptr = (UInt32*)buffer;
           
           *asInt32Ptr = NSSwapLittleIntToHost(*asInt32Ptr);
@@ -1484,7 +1653,8 @@ typedef struct {
           break;
         }
         case kUVCTypeComponentTypeSInt64:
-        case kUVCTypeComponentTypeUInt64: {
+        case kUVCTypeComponentTypeUInt64:
+        case kUVCTypeComponentTypeBitmap64: {
           UInt64   *asInt64Ptr = (UInt64*)buffer;
           
           *asInt64Ptr = NSSwapLittleLongLongToHost(*asInt64Ptr);
@@ -1723,26 +1893,29 @@ typedef struct {
         case kUVCTypeComponentTypeSInt8: {
           return [NSString stringWithFormat:@"%hhd", *((SInt8*)buffer)];
         }
-        case kUVCTypeComponentTypeBitmap8:
-        case kUVCTypeComponentTypeUInt8: {
+        case kUVCTypeComponentTypeUInt8:
+        case kUVCTypeComponentTypeBitmap8: {
           return [NSString stringWithFormat:@"%hhu", *((UInt8*)buffer)];
         }
         case kUVCTypeComponentTypeSInt16: {
           return [NSString stringWithFormat:@"%hd", *((SInt16*)buffer)];
         }
-        case kUVCTypeComponentTypeUInt16: {
+        case kUVCTypeComponentTypeUInt16:
+        case kUVCTypeComponentTypeBitmap16: {
           return [NSString stringWithFormat:@"%hu", *((UInt16*)buffer)];
         }
         case kUVCTypeComponentTypeSInt32: {
           return [NSString stringWithFormat:@"%d", *((SInt32*)buffer)];
         }
-        case kUVCTypeComponentTypeUInt32: {
+        case kUVCTypeComponentTypeUInt32:
+        case kUVCTypeComponentTypeBitmap32: {
           return [NSString stringWithFormat:@"%u", *((UInt32*)buffer)];
         }
         case kUVCTypeComponentTypeSInt64: {
           return [NSString stringWithFormat:@"%lld", *((SInt64*)buffer)];
         }
-        case kUVCTypeComponentTypeUInt64: {
+        case kUVCTypeComponentTypeUInt64:
+        case kUVCTypeComponentTypeBitmap64: {
           return [NSString stringWithFormat:@"%llu", *((UInt64*)buffer)];
         }
         case kUVCTypeComponentTypeMax:
@@ -1762,21 +1935,15 @@ typedef struct {
           shouldIncludeComma = YES;
           buffer++;
           break;
-        }
-        case kUVCTypeComponentTypeBitmap8: {
-            [asString appendFormat:@"%s%@=%hhu", shouldIncludeComma ? "," : "", FIELD_PTR->fieldName, *((UInt8*)buffer)];
-            shouldIncludeComma = YES;
-            buffer++;
-            break;
-          }
-              
+        }     
         case kUVCTypeComponentTypeSInt8: {
           [asString appendFormat:@"%s%@=%hhd", shouldIncludeComma ? "," : "", FIELD_PTR->fieldName, *((SInt8*)buffer)];
           shouldIncludeComma = YES;
           buffer++;
           break;
         }
-        case kUVCTypeComponentTypeUInt8: {
+        case kUVCTypeComponentTypeUInt8:
+        case kUVCTypeComponentTypeBitmap8: {
           [asString appendFormat:@"%s%@=%hhu", shouldIncludeComma ? "," : "", FIELD_PTR->fieldName, *((UInt8*)buffer)];
           shouldIncludeComma = YES;
           buffer++;
@@ -1788,7 +1955,8 @@ typedef struct {
           buffer += 2;
           break;
         }
-        case kUVCTypeComponentTypeUInt16: {
+        case kUVCTypeComponentTypeUInt16:
+        case kUVCTypeComponentTypeBitmap16: {
           [asString appendFormat:@"%s%@=%hu", shouldIncludeComma ? "," : "", FIELD_PTR->fieldName, *((UInt16*)buffer)];
           shouldIncludeComma = YES;
           buffer += 2;
@@ -1800,7 +1968,8 @@ typedef struct {
           buffer += 4;
           break;
         }
-        case kUVCTypeComponentTypeUInt32: {
+        case kUVCTypeComponentTypeUInt32:
+        case kUVCTypeComponentTypeBitmap32: {
           [asString appendFormat:@"%s%@=%u", shouldIncludeComma ? "," : "", FIELD_PTR->fieldName, *((UInt32*)buffer)];
           shouldIncludeComma = YES;
           buffer += 4;
@@ -1812,7 +1981,8 @@ typedef struct {
           buffer += 8;
           break;
         }
-        case kUVCTypeComponentTypeUInt64: {
+        case kUVCTypeComponentTypeUInt64:
+        case kUVCTypeComponentTypeBitmap64: {
           [asString appendFormat:@"%s%@=%llu", shouldIncludeComma ? "," : "", FIELD_PTR->fieldName, *((UInt64*)buffer)];
           shouldIncludeComma = YES;
           buffer += 8;

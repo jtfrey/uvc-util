@@ -368,7 +368,11 @@ FOUNDATION_EXPORT NSString *UVCTerminalControlPanTiltAbsolute;
 FOUNDATION_EXPORT NSString *UVCTerminalControlPanTiltRelative;
 FOUNDATION_EXPORT NSString *UVCTerminalControlRollAbsolute;
 FOUNDATION_EXPORT NSString *UVCTerminalControlRollRelative;
+FOUNDATION_EXPORT NSString *UVCTerminalControlFocusAuto;
 FOUNDATION_EXPORT NSString *UVCTerminalControlPrivacy;
+FOUNDATION_EXPORT NSString *UVCTerminalControlFocusSimple;
+FOUNDATION_EXPORT NSString *UVCTerminalControlWindow;
+FOUNDATION_EXPORT NSString *UVCTerminalControlRegionOfInterest;
 
 //
 // Control names, Processing Unit
@@ -391,3 +395,4 @@ FOUNDATION_EXPORT NSString *UVCProcessingUnitControlDigitalMultiplierLimit;
 FOUNDATION_EXPORT NSString *UVCProcessingUnitControlAutoHue;
 FOUNDATION_EXPORT NSString *UVCProcessingUnitControlAnalogVideoStandard;
 FOUNDATION_EXPORT NSString *UVCProcessingUnitControlAnalogLockStatus;
+FOUNDATION_EXPORT NSString *UVCProcessingUnitControlAutoContrast;
