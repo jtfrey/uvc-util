@@ -24,6 +24,7 @@ typedef enum {
   kUVCTypeComponentTypeBoolean,
   kUVCTypeComponentTypeSInt8,
   kUVCTypeComponentTypeUInt8,
+  kUVCTypeComponentTypeBitmap8,
   kUVCTypeComponentTypeSInt16,
   kUVCTypeComponentTypeUInt16,
   kUVCTypeComponentTypeSInt32,

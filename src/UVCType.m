@@ -25,12 +25,13 @@ UVCTypeComponentByteSize(UVCTypeComponentType componentType)
                         1,
                         1,
                         1,
+                        1,
                         2,
                         2,
                         4,
                         4,
                         8,
-                        8
+                        8,
                       };
   if ( componentType < kUVCTypeComponentTypeMax ) return byteSizes[componentType];
   return 0;
@@ -46,12 +47,13 @@ __UVCTypeComponentTypeString(UVCTypeComponentType componentType)
                         "B",
                         "S1",
                         "U1",
+                        "M"
                         "S2",
                         "U2",
                         "S4",
                         "U4",
                         "S8",
-                        "U8"
+                        "U8",
                       };
   if ( componentType < kUVCTypeComponentTypeMax ) return typeStrings[componentType];
   return 0;
@@ -67,12 +69,13 @@ __UVCTypeComponentVerboseTypeString(UVCTypeComponentType componentType)
                         "boolean",
                         "signed 8-bit integer",
                         "unsigned 8-bit integer",
+                        "unsigned 8-bit bitmap",
                         "signed 16-bit integer",
                         "unsigned 16-bit integer",
                         "signed 32-bit integer",
                         "unsigned 32-bit integer",
                         "signed 64-bit integer",
-                        "unsigned 64-bit integer"
+                        "unsigned 64-bit integer",
                       };
   if ( componentType < kUVCTypeComponentTypeMax ) return verboseTypeStrings[componentType];
   return 0;
@@ -98,6 +101,12 @@ __UVCTypeComponentTypeFromString(
     
     case 'B': {
       outType = kUVCTypeComponentTypeBoolean;
+      charConsumed++;
+      break;
+    }
+    
+    case 'M': {
+      outType = kUVCTypeComponentTypeBitmap8;
       charConsumed++;
       break;
     }
@@ -192,6 +201,7 @@ __UVCTypeComponentTypeScanf(
       }
       
       case kUVCTypeComponentTypeBoolean:
+      case kUVCTypeComponentTypeBitmap8:
       case kUVCTypeComponentTypeUInt8: {
         UInt8             *def = (UInt8*)theDefaultValue;
         
@@ -264,6 +274,7 @@ __UVCTypeComponentTypeScanf(
       }
       
       case kUVCTypeComponentTypeBoolean:
+      case kUVCTypeComponentTypeBitmap8:
       case kUVCTypeComponentTypeUInt8: {
         UInt8             *def = (UInt8*)theMinimum;
         
@@ -336,6 +347,7 @@ __UVCTypeComponentTypeScanf(
       }
       
       case kUVCTypeComponentTypeBoolean:
+      case kUVCTypeComponentTypeBitmap8:
       case kUVCTypeComponentTypeUInt8: {
         UInt8             *def = (UInt8*)theMaximum;
         
@@ -532,6 +544,7 @@ __UVCTypeComponentTypeScanf(
           }
           
           case kUVCTypeComponentTypeBoolean:
+          case kUVCTypeComponentTypeBitmap8:
           case kUVCTypeComponentTypeUInt8: {
             UInt8       *min = (UInt8*)theMinimum;
             UInt8       *max = (UInt8*)theMaximum;
@@ -741,6 +754,18 @@ __UVCTypeComponentTypeScanf(
         }
         break;
       }
+      
+        case kUVCTypeComponentTypeBitmap8: {          
+          UInt8       val;
+          
+          if ( sscanf(cString, "%hhi%n", &val, &n) == 1 ) {
+            *((UInt8*)theValue) = val;
+            rc = true;
+          } else {
+            if ( (flags & kUVCTypeScanFlagShowWarnings) ) fprintf(stderr, "WARNING: Unable to scan integer/bitmap value at '%s'\n", cString);
+          }
+          break;
+        }
       
       case kUVCTypeComponentTypeBoolean: {
         UInt8       val;
@@ -1387,6 +1412,7 @@ typedef struct {
     while ( FIELD_PTR < FIELD_MAX ) {
       switch ( FIELD_PTR->fieldType ) {
         case kUVCTypeComponentTypeBoolean:
+        case kUVCTypeComponentTypeBitmap8:
         case kUVCTypeComponentTypeSInt8:
         case kUVCTypeComponentTypeUInt8:
           buffer++;
@@ -1436,6 +1462,7 @@ typedef struct {
     while ( FIELD_PTR < FIELD_MAX ) {
       switch ( FIELD_PTR->fieldType ) {
         case kUVCTypeComponentTypeBoolean:
+        case kUVCTypeComponentTypeBitmap8:
         case kUVCTypeComponentTypeSInt8:
         case kUVCTypeComponentTypeUInt8:
           buffer++;
@@ -1696,6 +1723,7 @@ typedef struct {
         case kUVCTypeComponentTypeSInt8: {
           return [NSString stringWithFormat:@"%hhd", *((SInt8*)buffer)];
         }
+        case kUVCTypeComponentTypeBitmap8:
         case kUVCTypeComponentTypeUInt8: {
           return [NSString stringWithFormat:@"%hhu", *((UInt8*)buffer)];
         }
@@ -1735,6 +1763,13 @@ typedef struct {
           buffer++;
           break;
         }
+        case kUVCTypeComponentTypeBitmap8: {
+            [asString appendFormat:@"%s%@=%hhu", shouldIncludeComma ? "," : "", FIELD_PTR->fieldName, *((UInt8*)buffer)];
+            shouldIncludeComma = YES;
+            buffer++;
+            break;
+          }
+              
         case kUVCTypeComponentTypeSInt8: {
           [asString appendFormat:@"%s%@=%hhd", shouldIncludeComma ? "," : "", FIELD_PTR->fieldName, *((SInt8*)buffer)];
           shouldIncludeComma = YES;

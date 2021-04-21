@@ -282,7 +282,7 @@ typedef struct {
 */
 uvc_control_t     UVCControllerControls[] = {
                       UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_SCANNING_MODE_CONTROL, "{B}"),
-                      UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_AE_MODE_CONTROL, "{U1}"),
+                      UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_AE_MODE_CONTROL, "{M}"),
                       UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_AE_PRIORITY_CONTROL, "{U1}"),
                       UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_EXPOSURE_TIME_ABSOLUTE_CONTROL, "{U4}"),
                       UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_EXPOSURE_TIME_RELATIVE_CONTROL, "{S1}"),
@@ -1483,6 +1483,7 @@ uvc_control_t     UVCControllerControls[] = {
     if ( [self hasDefaultValue] ) {
       [asString appendFormat:@"\n  default-value: %@", [_defaultValue stringValue]];
     }
+    [asString appendFormat:@"\n  current-value: %@", [[self currentValue]  stringValue]];      
     [asString appendString:@"\n}"];
     
     NSString      *outString = [[asString copy] autorelease];
