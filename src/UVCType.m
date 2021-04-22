@@ -565,14 +565,14 @@ __UVCTypeComponentTypeScanf(
             SInt8       val = round(*min + fractionalValue * (*max - *min));
             
             // Fix to the appropriate resolution if applicable:
-            if ( res && (*res > 1) ) {
-              SInt8     residual = (val % *res);
+            if ( min && max && res && (*res > 1) ) {
+              SInt8     residual = ((val - *min) % *res);
 
               if ( residual != 0 ) {
                 if ( residual >= (*res / 2) ) {
-                  val += *res - residual;
+                  val = val + (*res - residual);
                 } else {
-                  val -= residual;
+                  val = val - residual;
                 }
               }
             }
@@ -588,14 +588,14 @@ __UVCTypeComponentTypeScanf(
             UInt8       val = round(*min + fractionalValue * (*max - *min));
             
             // Fix to the appropriate resolution if applicable:
-            if ( res && (*res > 1) ) {
-              UInt8     residual = (val % *res);
+            if ( min && max && res && (*res > 1) ) {
+              UInt8     residual = ((val - *min) % *res);
 
               if ( residual != 0 ) {
                 if ( residual >= (*res / 2) ) {
-                  val += *res - residual;
+                  val = val + (*res - residual);
                 } else {
-                  val -= residual;
+                  val = val - residual;
                 }
               }
             }
@@ -623,14 +623,14 @@ __UVCTypeComponentTypeScanf(
             SInt16      val = round(*min + fractionalValue * (*max - *min));
             
             // Fix to the appropriate resolution if applicable:
-            if ( res && (*res > 1) ) {
-              SInt16    residual = (val % *res);
+            if ( min && max && res && (*res > 1) ) {
+              SInt16    residual = ((val - *min) % *res);
 
               if ( residual != 0 ) {
                 if ( residual >= (*res / 2) ) {
-                  val += *res - residual;
+                  val = val + (*res - residual);
                 } else {
-                  val -= residual;
+                  val = val - residual;
                 }
               }
             }
@@ -645,14 +645,14 @@ __UVCTypeComponentTypeScanf(
             UInt16      val = round(*min + fractionalValue * (*max - *min));
             
             // Fix to the appropriate resolution if applicable:
-            if ( res && (*res > 1) ) {
-              UInt16    residual = (val % *res);
+            if ( min && max && res && (*res > 1) ) {
+              UInt16    residual = ((val - *min) % *res);
 
               if ( residual != 0 ) {
                 if ( residual >= (*res / 2) ) {
-                  val += *res - residual;
+                  val = val + (*res - residual);
                 } else {
-                  val -= residual;
+                  val = val - residual;
                 }
               }
             }
@@ -680,14 +680,14 @@ __UVCTypeComponentTypeScanf(
             SInt32      val = round(*min + fractionalValue * (*max - *min));
             
             // Fix to the appropriate resolution if applicable:
-            if ( res && (*res > 1) ) {
-              SInt32    residual = (val % *res);
+            if ( min && max && res && (*res > 1) ) {
+              SInt32    residual = ((val - *min) % *res);
 
               if ( residual != 0 ) {
                 if ( residual >= (*res / 2) ) {
-                  val += *res - residual;
+                  val = val + (*res - residual);
                 } else {
-                  val -= residual;
+                  val = val - residual;
                 }
               }
             }
@@ -702,14 +702,14 @@ __UVCTypeComponentTypeScanf(
             UInt32      val = round(*min + fractionalValue * (*max - *min));
             
             // Fix to the appropriate resolution if applicable:
-            if ( res && (*res > 1) ) {
-              UInt32    residual = (val % *res);
+            if ( min && max && res && (*res > 1) ) {
+              UInt32    residual = ((val - *min) % *res);
 
               if ( residual != 0 ) {
                 if ( residual >= (*res / 2) ) {
-                  val += *res - residual;
+                  val = val + (*res - residual);
                 } else {
-                  val -= residual;
+                  val = val - residual;
                 }
               }
             }
@@ -737,14 +737,14 @@ __UVCTypeComponentTypeScanf(
             SInt64      val = round(*min + fractionalValue * (*max - *min));
             
             // Fix to the appropriate resolution if applicable:
-            if ( res && (*res > 1) ) {
-              SInt64    residual = (val % *res);
+            if ( min && max && res && (*res > 1) ) {
+              SInt64    residual = ((val - *min) % *res);
 
               if ( residual != 0 ) {
                 if ( residual >= (*res / 2) ) {
-                  val += *res - residual;
+                  val = val + (*res - residual);
                 } else {
-                  val -= residual;
+                  val = val - residual;
                 }
               }
             }
@@ -759,14 +759,14 @@ __UVCTypeComponentTypeScanf(
             UInt64      val = round(*min + fractionalValue * (*max - *min));
             
             // Fix to the appropriate resolution if applicable:
-            if ( res && (*res > 1) ) {
-              UInt64    residual = (val % *res);
+            if ( min && max && res && (*res > 1) ) {
+              UInt64    residual = ((val - *min) % *res);
 
               if ( residual != 0 ) {
                 if ( residual >= (*res / 2) ) {
-                  val += *res - residual;
+                  val = val + (*res - residual);
                 } else {
-                  val -= residual;
+                  val = val - residual;
                 }
               }
             }
@@ -822,14 +822,14 @@ __UVCTypeComponentTypeScanf(
           else if ( max && (val > *max) ) val = *max;
           
           // Fix to the appropriate resolution if applicable:
-          if ( res && (*res > 1) ) {
-            SInt8     residual = (val % *res);
+          if ( min && max && res && (*res > 1) ) {
+            SInt16   residual = ((val - *min) % *res);
 
             if ( residual != 0 ) {
               if ( residual >= (*res / 2) ) {
-                val += *res - residual;
+                val = val + (*res - residual);
               } else {
-                val -= residual;
+                val = val - residual;
               }
             }
           }
@@ -867,14 +867,14 @@ __UVCTypeComponentTypeScanf(
           else if ( max && (val > *max) ) val = *max;
           
           // Fix to the appropriate resolution if applicable:
-          if ( res && (*res > 1) ) {
-            UInt8     residual = (val % *res);
+          if ( min && max && res && (*res > 1) ) {
+            UInt8    residual = ((val - *min) % *res);
 
             if ( residual != 0 ) {
               if ( residual >= (*res / 2) ) {
-                val += *res - residual;
+                val = val + (*res - residual);
               } else {
-                val -= residual;
+                val = val - residual;
               }
             }
           }
@@ -920,14 +920,14 @@ __UVCTypeComponentTypeScanf(
           else if ( max && (val > *max) ) val = *max;
           
           // Fix to the appropriate resolution if applicable:
-          if ( res && (*res > 1) ) {
-            SInt16    residual = (val % *res);
+          if ( min && max && res && (*res > 1) ) {
+            SInt32   residual = ((val - *min) % *res);
 
             if ( residual != 0 ) {
               if ( residual >= (*res / 2) ) {
-                val += *res - residual;
+                val = val + (*res - residual);
               } else {
-                val -= residual;
+                val = val - residual;
               }
             }
           }
@@ -953,14 +953,14 @@ __UVCTypeComponentTypeScanf(
           else if ( max && (val > *max) ) val = *max;
           
           // Fix to the appropriate resolution if applicable:
-          if ( res && (*res > 1) ) {
-            UInt16    residual = (val % *res);
+          if ( min && max && res && (*res > 1) ) {
+            UInt16   residual = ((val - *min) % *res);
 
             if ( residual != 0 ) {
               if ( residual >= (*res / 2) ) {
-                val += *res - residual;
+                val = val + (*res - residual);
               } else {
-                val -= residual;
+                val = val - residual;
               }
             }
           }
@@ -1006,14 +1006,14 @@ __UVCTypeComponentTypeScanf(
           else if ( max && (val > *max) ) val = *max;
           
           // Fix to the appropriate resolution if applicable:
-          if ( res && (*res > 1) ) {
-            SInt32    residual = (val % *res);
+          if ( min && max && res && (*res > 1) ) {
+            SInt64   residual = ((val - *min) % *res);
 
             if ( residual != 0 ) {
               if ( residual >= (*res / 2) ) {
-                val += *res - residual;
+                val = val + (*res - residual);
               } else {
-                val -= residual;
+                val = val - residual;
               }
             }
           }
@@ -1039,14 +1039,14 @@ __UVCTypeComponentTypeScanf(
           else if ( max && (val > *max) ) val = *max;
           
           // Fix to the appropriate resolution if applicable:
-          if ( res && (*res > 1) ) {
-            UInt32    residual = (val % *res);
+          if ( min && max && res && (*res > 1) ) {
+            UInt32   residual = ((val - *min) % *res);
 
             if ( residual != 0 ) {
               if ( residual >= (*res / 2) ) {
-                val += *res - residual;
+                val = val + (*res - residual);
               } else {
-                val -= residual;
+                val = val - residual;
               }
             }
           }
@@ -1092,14 +1092,14 @@ __UVCTypeComponentTypeScanf(
           else if ( max && (val > *max) ) val = *max;
           
           // Fix to the appropriate resolution if applicable:
-          if ( res && (*res > 1) ) {
-            SInt64    residual = (val % *res);
+          if ( min && max && res && (*res > 1) ) {
+            SInt64   residual = ((val - *min) % *res);
 
             if ( residual != 0 ) {
               if ( residual >= (*res / 2) ) {
-                val += *res - residual;
+                val = val + (*res - residual);
               } else {
-                val -= residual;
+                val = val - residual;
               }
             }
           }
@@ -1123,14 +1123,14 @@ __UVCTypeComponentTypeScanf(
           else if ( max && (val > *max) ) val = *max;
           
           // Fix to the appropriate resolution if applicable:
-          if ( res && (*res > 1) ) {
-            UInt64    residual = (val % *res);
+          if ( min && max && res && (*res > 1) ) {
+            UInt64   residual = ((val - *min) % *res);
 
             if ( residual != 0 ) {
               if ( residual >= (*res / 2) ) {
-                val += *res - residual;
+                val = val + (*res - residual);
               } else {
-                val -= residual;
+                val = val - residual;
               }
             }
           }
