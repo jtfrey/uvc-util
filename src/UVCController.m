@@ -144,7 +144,7 @@ enum {
 //
 // Terminal controls:
 //
-#define UVC_INPUT_TERMINAL_ID                 0x01
+#define UVC_INPUT_TERMINAL_ID                 VC_INPUT_TERMINAL - 1
 
 #define CT_SCANNING_MODE_CONTROL                  0x01
 #define CT_AE_MODE_CONTROL                        0x02
@@ -167,7 +167,7 @@ enum {
 //
 // Processing-unit controls:
 //
-#define UVC_PROCESSING_UNIT_ID                0x02
+#define UVC_PROCESSING_UNIT_ID                VC_PROCESSING_UNIT - 1
 
 #define PU_BACKLIGHT_COMPENSATION_CONTROL         0x01
 #define PU_BRIGHTNESS_CONTROL                     0x02
