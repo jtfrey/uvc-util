@@ -48,6 +48,7 @@
   BOOL                          _isInterfaceOpen;
   uint8_t                       _videoInterfaceIndex;
   NSMutableDictionary           *_controls;
+  NSMutableDictionary           *_unitIds;
   UInt16                        _uvcVersion;
   NSData                        *_terminalControlsAvailable;
   NSData                        *_processingUnitControlsAvailable;

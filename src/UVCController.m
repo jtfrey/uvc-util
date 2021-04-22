@@ -253,15 +253,13 @@ typedef void (*UVCControllerPreProcessCallback)(void *data, int size);
   
   Each UVC control is defined via one of these data structures.  Since the standard
   declares each control's expected data size and structure, the data structure
-  associates the declared unit- and selector-id with the known size (in bytes) for
-  the control.
-  
-  Automatic endian/layout transformations of the control value can be provided by means
-  of the preCallback and postCallback function pointers.  Use the constant NULL if a
-  control lacks a preCallback or postCallback.
+  associates the declared selector-id with the type description string and a cached
+  "compiled" type representation.
 */
 typedef struct {
-	int           unit, selector;
+  int           unitType;
+  NSString      *unitTypeStr;
+  int           selector;
   const char    *uvcTypeDescription;
   UVCType       *uvcType;
 } uvc_control_t;
@@ -272,14 +270,13 @@ typedef struct {
   Macro that expands a list of UVCControllerControls field values into a struct
   initializer statement.
 */
-#define UVC_CONTROL_INIT(U,S,T) { .unit = (U), .selector = (S), .uvcTypeDescription = (T), .uvcType = nil }
+#define UVC_CONTROL_INIT(U,S,T) { .unitType = (U), .unitTypeStr = @"#U", .selector = (S), .uvcTypeDescription = (T), .uvcType = nil }
 
 /*!
   @constant UVCControllerControls
   
   List of all the UVC controls this API supports.  Each control consists of:
   
-    - unit id (e.g. UVC_INPUT_TERMINAL_ID, UVC_PROCESSING_UNIT_ID)
     - control selector (e.g. CT_SCANNING_MODE_CONTROL, PU_BACKLIGHT_COMPENSATION_CONTROL)
     - UVCType type description string
     - cached UVCType instance
@@ -698,7 +695,7 @@ uvc_control_t     UVCControllerControls[] = {
     NSUInteger      controlIndex = [self controlIndexForString:controlString];
 
     if ( controlIndex != UVCInvalidControlIndex ) {
-      switch ( UVCControllerControls[controlIndex].unit ) {
+      switch ( UVCControllerControls[controlIndex].unitType ) {
 
         case UVC_INPUT_TERMINAL_ID: {
           // If we weren't able to get control enablement from the interface
@@ -772,6 +769,11 @@ uvc_control_t     UVCControllerControls[] = {
       if ( IORegistryEntryGetName(ioServiceObject, nameBuffer) == KERN_SUCCESS ) {
         _deviceName = [[NSString stringWithUTF8String:nameBuffer] retain];
       }
+      _unitIds = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
+                        [NSNumber numberWithInt:UVC_INPUT_TERMINAL_ID], @"UVC_INPUT_TERMINAL_ID",
+                        [NSNumber numberWithInt:UVC_PROCESSING_UNIT_ID], @"UVC_PROCESSING_UNIT_ID",
+                        nil
+                    ];
       if ( [self findControllerInterfaceForServiceObject:ioServiceObject] ) {
         _controls = [[NSMutableDictionary alloc] init];
       } else {
@@ -789,7 +791,7 @@ uvc_control_t     UVCControllerControls[] = {
     IOUSBDeviceInterface        **deviceInterface = NULL;
     IOCFPlugInInterface         **plugInInterface = NULL;
     SInt32                      score;
-		kern_return_t               krc = IOCreatePlugInInterfaceForService(ioServiceObject, kIOUSBDeviceUserClientTypeID, kIOCFPlugInInterfaceID, &plugInInterface, &score);
+    kern_return_t               krc = IOCreatePlugInInterfaceForService(ioServiceObject, kIOUSBDeviceUserClientTypeID, kIOCFPlugInInterfaceID, &plugInInterface, &score);
 
     if ( (krc != kIOReturnSuccess) || ! plugInInterface ) return NO;
 
@@ -819,14 +821,14 @@ uvc_control_t     UVCControllerControls[] = {
     IOObjectRelease(interfaceIter);
     if ( ! usbInterface ) return NO;
 
-		// Create an intermediate plug-in to use to grab an interface to the device:
-		krc = IOCreatePlugInInterfaceForService(usbInterface, kIOUSBInterfaceUserClientTypeID, kIOCFPlugInInterfaceID, &plugInInterface, &score);
+    // Create an intermediate plug-in to use to grab an interface to the device:
+    krc = IOCreatePlugInInterfaceForService(usbInterface, kIOUSBInterfaceUserClientTypeID, kIOCFPlugInInterfaceID, &plugInInterface, &score);
     IOObjectRelease(usbInterface);
-		if ( (krc != kIOReturnSuccess) || ! plugInInterface ) return NO;
+    if ( (krc != kIOReturnSuccess) || ! plugInInterface ) return NO;
 
-		// Now create the device interface for the interface:
-		hrc = (*plugInInterface)->QueryInterface(plugInInterface, CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID), (LPVOID *)&_controllerInterface);
-		IODestroyPlugInInterface(plugInInterface);
+    // Now create the device interface for the interface:
+    hrc = (*plugInInterface)->QueryInterface(plugInInterface, CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID), (LPVOID *)&_controllerInterface);
+    IODestroyPlugInInterface(plugInInterface);
     if ( (hrc != 0) || ! _controllerInterface ) return NO;
 
     hrc = (*_controllerInterface)->GetInterfaceNumber(_controllerInterface, &_videoInterfaceIndex);
@@ -878,6 +880,7 @@ uvc_control_t     UVCControllerControls[] = {
                   UVC_PU_Header_Descriptor            *puHeader = (UVC_PU_Header_Descriptor*)basePtr;
 
                   if ( puHeader->bControlSize > 0 ) {
+                    [_unitIds setObject:[NSNumber numberWithInt:puHeader->bUnitId] forKey:@"UVC_PROCESSING_UNIT_ID"];
                     _processingUnitControlsAvailable = [[NSData alloc] initWithBytes:&puHeader->bmControls[0] length:puHeader->bControlSize];
                   }
                   break;
@@ -967,7 +970,7 @@ uvc_control_t     UVCControllerControls[] = {
     uvc_control_t           *control = &UVCControllerControls[controlId];
     uint8_t                 scratch;
 
-    if ( [self getData:&scratch ofType:UVC_GET_INFO withLength:1 fromSelector:control->selector atUnitId:control->unit] ) {
+    if ( [self getData:&scratch ofType:UVC_GET_INFO withLength:1 fromSelector:control->selector atUnitId:[[_unitIds objectForKey:control->unitTypeStr] intValue]] ) {
       *capabilities = scratch;
       return YES;
     }
@@ -984,10 +987,11 @@ uvc_control_t     UVCControllerControls[] = {
     forControl:(NSUInteger)controlId
   {
     uvc_control_t   *control = &UVCControllerControls[controlId];
+    int             unitId = [[_unitIds objectForKey:control->unitTypeStr] intValue];
     
     if ( *lowValue && *highValue ) {
-      if ( [self getData:[*lowValue valuePtr] ofType:UVC_GET_MIN withLength:(int)[*lowValue byteSize] fromSelector:control->selector atUnitId:control->unit] &&
-           [self getData:[*highValue valuePtr] ofType:UVC_GET_MAX withLength:(int)[*highValue byteSize] fromSelector:control->selector atUnitId:control->unit]
+      if ( [self getData:[*lowValue valuePtr] ofType:UVC_GET_MIN withLength:(int)[*lowValue byteSize] fromSelector:control->selector atUnitId:unitId] &&
+           [self getData:[*highValue valuePtr] ofType:UVC_GET_MAX withLength:(int)[*highValue byteSize] fromSelector:control->selector atUnitId:unitId]
       ) {
         *capabilities |= kUVCControlHasRange;
         [(*lowValue = [*lowValue retain]) byteSwapUSBToHostEndian];
@@ -998,7 +1002,7 @@ uvc_control_t     UVCControllerControls[] = {
       }
     }
     if ( *stepSize ) {
-      if ( [self getData:[*stepSize valuePtr] ofType:UVC_GET_RES withLength:(int)[*stepSize byteSize] fromSelector:control->selector atUnitId:control->unit]) {
+      if ( [self getData:[*stepSize valuePtr] ofType:UVC_GET_RES withLength:(int)[*stepSize byteSize] fromSelector:control->selector atUnitId:unitId]) {
         *capabilities |= kUVCControlHasStepSize;
         [(*stepSize = [*stepSize retain]) byteSwapUSBToHostEndian];
       } else {
@@ -1006,7 +1010,7 @@ uvc_control_t     UVCControllerControls[] = {
       }
     }
     if ( *defaultValue ) {
-      if ( [self getData:[*defaultValue valuePtr] ofType:UVC_GET_DEF withLength:(int)[*defaultValue byteSize] fromSelector:control->selector atUnitId:control->unit]) {
+      if ( [self getData:[*defaultValue valuePtr] ofType:UVC_GET_DEF withLength:(int)[*defaultValue byteSize] fromSelector:control->selector atUnitId:unitId]) {
         *capabilities |= kUVCControlHasDefaultValue;
         [(*defaultValue = [*defaultValue retain]) byteSwapUSBToHostEndian];
       } else {
@@ -1022,7 +1026,7 @@ uvc_control_t     UVCControllerControls[] = {
   {
     uvc_control_t   *control = &UVCControllerControls[controlId];
      
-    if ( [self getData:[value valuePtr] ofType:UVC_GET_CUR withLength:(int)[value byteSize] fromSelector:control->selector atUnitId:control->unit] ) {
+    if ( [self getData:[value valuePtr] ofType:UVC_GET_CUR withLength:(int)[value byteSize] fromSelector:control->selector atUnitId:[[_unitIds objectForKey:control->unitTypeStr] intValue]] ) {
       [value byteSwapUSBToHostEndian];
       return YES;
     }
@@ -1038,7 +1042,7 @@ uvc_control_t     UVCControllerControls[] = {
     BOOL            rc = NO;
     
     [value byteSwapHostToUSBEndian];
-    rc = [self setData:[value valuePtr] withLength:(int)[value byteSize] forSelector:control->selector atUnitId:control->unit];
+    rc = [self setData:[value valuePtr] withLength:(int)[value byteSize] forSelector:control->selector atUnitId:[[_unitIds objectForKey:control->unitTypeStr] intValue]];
     [value byteSwapUSBToHostEndian];
     return rc;
   }
@@ -1217,6 +1221,7 @@ uvc_control_t     UVCControllerControls[] = {
     if ( _terminalControlsAvailable ) [_terminalControlsAvailable release];
     if ( _processingUnitControlsAvailable ) [_processingUnitControlsAvailable release];
     if ( _controls ) [_controls release];
+    if ( _unitIds ) [_unitIds release];
     if ( _controllerInterface ) {
       [self setIsInterfaceOpen:NO];
       (*_controllerInterface)->Release(_controllerInterface);
