@@ -1560,5 +1560,5 @@ NSString *UVCProcessingUnitControlDigitalMultiplierLimit = @"digital-multiplier-
 NSString *UVCProcessingUnitControlAutoHue = @"auto-hue";
 NSString *UVCProcessingUnitControlAnalogVideoStandard = @"analog-video-standard";
 NSString *UVCProcessingUnitControlAnalogLockStatus = @"analog-lock-status";
-NSString *UVCProcessingUnitControlAutoContrast = @"contrast-auto-control";
+NSString *UVCProcessingUnitControlAutoContrast = @"auto-contrast";
 
