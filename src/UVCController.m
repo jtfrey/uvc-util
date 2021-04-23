@@ -10,6 +10,8 @@
 // $Id$
 //
 
+#define DEBUG_WRITE_HEADER_TO_FILE
+
 #import "UVCController.h"
 
 //
@@ -853,7 +855,21 @@ uvc_control_t     UVCControllerControls[] = {
           UVC_VC_Interface_Header_Descriptor    *vcHeader = (UVC_VC_Interface_Header_Descriptor*)interfaceDescriptor;
           void                                  *basePtr = (void*)vcHeader;
           void                                  *endPtr = basePtr + vcHeader->wTotalLength;
-
+          
+          // Dump the header to a file for debugging:
+#ifdef DEBUG_WRITE_HEADER_TO_FILE
+          char                                  headerFName[64];
+          
+          snprintf(headerFName, sizeof(headerFName), "uvc-header-%hhu.bin", vcHeader->baInterfaceNr1);
+          
+          FILE                                  *headerFPtr = fopen(headerFName, "w");
+          
+          if ( headerFPtr ) {
+            fwrite(basePtr, vcHeader->wTotalLength, 1, headerFPtr);
+            fclose(headerFPtr);
+          }
+#endif
+          
           // Grab the version of the UVC standard this device implements:
           _uvcVersion = NSSwapLittleShortToHost(vcHeader->bcdUVC);
 
