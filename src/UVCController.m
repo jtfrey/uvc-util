@@ -10,7 +10,7 @@
 // $Id$
 //
 
-#define DEBUG_WRITE_HEADER_TO_FILE
+//#define DEBUG_WRITE_UVC_HEADER_TO_FILE
 
 #import "UVCController.h"
 
@@ -272,7 +272,7 @@ typedef struct {
   Macro that expands a list of UVCControllerControls field values into a struct
   initializer statement.
 */
-#define UVC_CONTROL_INIT(U,S,T) { .unitType = (U), .unitTypeStr = @"#U", .selector = (S), .uvcTypeDescription = (T), .uvcType = nil }
+#define UVC_CONTROL_INIT(U,S,T) { .unitType = (U), .unitTypeStr = @#U, .selector = (S), .uvcTypeDescription = (T), .uvcType = nil }
 
 /*!
   @constant UVCControllerControls
@@ -856,8 +856,8 @@ uvc_control_t     UVCControllerControls[] = {
           void                                  *basePtr = (void*)vcHeader;
           void                                  *endPtr = basePtr + vcHeader->wTotalLength;
           
+#ifdef DEBUG_WRITE_UVC_HEADER_TO_FILE
           // Dump the header to a file for debugging:
-#ifdef DEBUG_WRITE_HEADER_TO_FILE
           char                                  headerFName[64];
           
           snprintf(headerFName, sizeof(headerFName), "uvc-header-%hhu.bin", vcHeader->baInterfaceNr1);
