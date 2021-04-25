@@ -10,6 +10,8 @@
 // $Id$
 //
 
+//#define DEBUG_WRITE_UVC_HEADER_TO_FILE
+
 #import "UVCController.h"
 
 //
@@ -84,8 +86,11 @@ enum {
   kUVCTerminalControlEnablePanTiltRelative        = 12,
   kUVCTerminalControlEnableRollAbsolute           = 13,
   kUVCTerminalControlEnableRollRelative           = 14,
-  kUVCTerminalControlEnableAutoFocus              = 17,
-  kUVCTerminalControlEnablePrivacy                = 18
+  kUVCTerminalControlEnableFocusAuto              = 17,
+  kUVCTerminalControlEnablePrivacy                = 18,
+  kUVCTerminalControlEnableFocusSimple            = 19,
+  kUVCTerminalControlEnableWindow                 = 20,
+  kUVCTerminalControlEnableRegionOfInterest       = 21
 };
 
 typedef struct {
@@ -126,7 +131,8 @@ enum {
   kUVCProcessingUnitControlEnableDigitalMultiplier            = 14,
   kUVCProcessingUnitControlEnableDigitalMultiplierLimit       = 15,
   kUVCProcessingUnitControlEnableAnalogVideoStandard          = 16,
-  kUVCProcessingUnitControlEnableAnalogVideoLockStatus        = 17
+  kUVCProcessingUnitControlEnableAnalogVideoLockStatus        = 17,
+  kUVCProcessingUnitControlEnableAutoContrast                 = 18
 };
 
 //
@@ -163,6 +169,9 @@ enum {
 #define CT_ROLL_ABSOLUTE_CONTROL                  0x0f
 #define CT_ROLL_RELATIVE_CONTROL                  0x10
 #define CT_PRIVACY_CONTROL                        0x11
+#define CT_FOCUS_SIMPLE_CONTROL                   0x12
+#define CT_WINDOW_CONTROL                         0x13
+#define CT_REGION_OF_INTEREST_CONTROL             0x14
 
 //
 // Processing-unit controls:
@@ -187,6 +196,7 @@ enum {
 #define PU_HUE_AUTO_CONTROL                       0x10
 #define PU_ANALOG_VIDEO_STANDARD_CONTROL          0x11
 #define PU_ANALOG_LOCK_STATUS_CONTROL             0x12
+#define PU_CONTRAST_AUTO_CONTROL                  0x13
 
 /*!
   @enum UVC control capabilities
@@ -245,15 +255,13 @@ typedef void (*UVCControllerPreProcessCallback)(void *data, int size);
   
   Each UVC control is defined via one of these data structures.  Since the standard
   declares each control's expected data size and structure, the data structure
-  associates the declared unit- and selector-id with the known size (in bytes) for
-  the control.
-  
-  Automatic endian/layout transformations of the control value can be provided by means
-  of the preCallback and postCallback function pointers.  Use the constant NULL if a
-  control lacks a preCallback or postCallback.
+  associates the declared selector-id with the type description string and a cached
+  "compiled" type representation.
 */
 typedef struct {
-	int           unit, selector;
+  int           unitType;
+  NSString      *unitTypeStr;
+  int           selector;
   const char    *uvcTypeDescription;
   UVCType       *uvcType;
 } uvc_control_t;
@@ -264,14 +272,13 @@ typedef struct {
   Macro that expands a list of UVCControllerControls field values into a struct
   initializer statement.
 */
-#define UVC_CONTROL_INIT(U,S,T) { .unit = (U), .selector = (S), .uvcTypeDescription = (T), .uvcType = nil }
+#define UVC_CONTROL_INIT(U,S,T) { .unitType = (U), .unitTypeStr = @#U, .selector = (S), .uvcTypeDescription = (T), .uvcType = nil }
 
 /*!
   @constant UVCControllerControls
   
   List of all the UVC controls this API supports.  Each control consists of:
   
-    - unit id (e.g. UVC_INPUT_TERMINAL_ID, UVC_PROCESSING_UNIT_ID)
     - control selector (e.g. CT_SCANNING_MODE_CONTROL, PU_BACKLIGHT_COMPENSATION_CONTROL)
     - UVCType type description string
     - cached UVCType instance
@@ -282,7 +289,7 @@ typedef struct {
 */
 uvc_control_t     UVCControllerControls[] = {
                       UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_SCANNING_MODE_CONTROL, "{B}"),
-                      UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_AE_MODE_CONTROL, "{U1}"),
+                      UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_AE_MODE_CONTROL, "{M1}"),
                       UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_AE_PRIORITY_CONTROL, "{U1}"),
                       UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_EXPOSURE_TIME_ABSOLUTE_CONTROL, "{U4}"),
                       UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_EXPOSURE_TIME_RELATIVE_CONTROL, "{S1}"),
@@ -298,6 +305,9 @@ uvc_control_t     UVCControllerControls[] = {
                       UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_ROLL_ABSOLUTE_CONTROL, "{S2}"),
                       UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_ROLL_RELATIVE_CONTROL, "{S1 roll-relative; U1 roll-speed}"),
                       UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_PRIVACY_CONTROL, "{B}"),
+                      UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_FOCUS_SIMPLE_CONTROL, "{U1}"),
+                      UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_WINDOW_CONTROL, "{U2 window-top; U2 window-left; U2 window-bottom; U2 window-right; U2 num-steps; M2 num-steps-units}"),
+                      UVC_CONTROL_INIT(UVC_INPUT_TERMINAL_ID, CT_REGION_OF_INTEREST_CONTROL, "{U2 roi-top; U2 roi-left; U2 roi-bottom; U2 roi-right; M2 auto-controls}"),
                       //
                       UVC_CONTROL_INIT(UVC_PROCESSING_UNIT_ID, PU_BACKLIGHT_COMPENSATION_CONTROL, "{U2}"),
                       UVC_CONTROL_INIT(UVC_PROCESSING_UNIT_ID, PU_BRIGHTNESS_CONTROL, "{S2}"),
@@ -316,7 +326,8 @@ uvc_control_t     UVCControllerControls[] = {
                       UVC_CONTROL_INIT(UVC_PROCESSING_UNIT_ID, PU_DIGITAL_MULTIPLIER_LIMIT_CONTROL, "{U2}"),
                       UVC_CONTROL_INIT(UVC_PROCESSING_UNIT_ID, PU_HUE_AUTO_CONTROL,"{B}"),
                       UVC_CONTROL_INIT(UVC_PROCESSING_UNIT_ID, PU_ANALOG_VIDEO_STANDARD_CONTROL, "{U1}"),
-                      UVC_CONTROL_INIT(UVC_PROCESSING_UNIT_ID, PU_ANALOG_LOCK_STATUS_CONTROL, "{U1}")
+                      UVC_CONTROL_INIT(UVC_PROCESSING_UNIT_ID, PU_ANALOG_LOCK_STATUS_CONTROL, "{U1}"),
+                      UVC_CONTROL_INIT(UVC_PROCESSING_UNIT_ID, PU_CONTRAST_AUTO_CONTROL, "{U1}")
                     };
 
 /*!
@@ -552,25 +563,29 @@ uvc_control_t     UVCControllerControls[] = {
                                   [NSNumber numberWithInt:14], UVCTerminalControlRollAbsolute,
                                   [NSNumber numberWithInt:15], UVCTerminalControlRollRelative,
                                   [NSNumber numberWithInt:16], UVCTerminalControlPrivacy,
+                                  [NSNumber numberWithInt:17], UVCTerminalControlFocusSimple,
+                                  [NSNumber numberWithInt:18], UVCTerminalControlWindow,
+                                  [NSNumber numberWithInt:19], UVCTerminalControlRegionOfInterest,
 
-                                  [NSNumber numberWithInt:17], UVCProcessingUnitControlBacklightCompensation,
-                                  [NSNumber numberWithInt:18], UVCProcessingUnitControlBrightness,
-                                  [NSNumber numberWithInt:19], UVCProcessingUnitControlContrast,
-                                  [NSNumber numberWithInt:20], UVCProcessingUnitControlGain,
-                                  [NSNumber numberWithInt:21], UVCProcessingUnitControlPowerLineFrequency,
-                                  [NSNumber numberWithInt:22], UVCProcessingUnitControlHue,
-                                  [NSNumber numberWithInt:23], UVCProcessingUnitControlSaturation,
-                                  [NSNumber numberWithInt:24], UVCProcessingUnitControlSharpness,
-                                  [NSNumber numberWithInt:25], UVCProcessingUnitControlGamma,
-                                  [NSNumber numberWithInt:26], UVCProcessingUnitControlWhiteBalanceTemperature,
-                                  [NSNumber numberWithInt:27], UVCProcessingUnitControlAutoWhiteBalanceTemperature,
-                                  [NSNumber numberWithInt:28], UVCProcessingUnitControlWhiteBalanceComponent,
-                                  [NSNumber numberWithInt:29], UVCProcessingUnitControlAutoWhiteBalanceComponent,
-                                  [NSNumber numberWithInt:30], UVCProcessingUnitControlDigitalMultiplier,
-                                  [NSNumber numberWithInt:31], UVCProcessingUnitControlDigitalMultiplierLimit,
-                                  [NSNumber numberWithInt:32], UVCProcessingUnitControlAutoHue,
-                                  [NSNumber numberWithInt:33], UVCProcessingUnitControlAnalogVideoStandard,
-                                  [NSNumber numberWithInt:34], UVCProcessingUnitControlAnalogLockStatus,
+                                  [NSNumber numberWithInt:20], UVCProcessingUnitControlBacklightCompensation,
+                                  [NSNumber numberWithInt:21], UVCProcessingUnitControlBrightness,
+                                  [NSNumber numberWithInt:22], UVCProcessingUnitControlContrast,
+                                  [NSNumber numberWithInt:23], UVCProcessingUnitControlGain,
+                                  [NSNumber numberWithInt:24], UVCProcessingUnitControlPowerLineFrequency,
+                                  [NSNumber numberWithInt:25], UVCProcessingUnitControlHue,
+                                  [NSNumber numberWithInt:26], UVCProcessingUnitControlSaturation,
+                                  [NSNumber numberWithInt:27], UVCProcessingUnitControlSharpness,
+                                  [NSNumber numberWithInt:28], UVCProcessingUnitControlGamma,
+                                  [NSNumber numberWithInt:29], UVCProcessingUnitControlWhiteBalanceTemperature,
+                                  [NSNumber numberWithInt:30], UVCProcessingUnitControlAutoWhiteBalanceTemperature,
+                                  [NSNumber numberWithInt:31], UVCProcessingUnitControlWhiteBalanceComponent,
+                                  [NSNumber numberWithInt:32], UVCProcessingUnitControlAutoWhiteBalanceComponent,
+                                  [NSNumber numberWithInt:33], UVCProcessingUnitControlDigitalMultiplier,
+                                  [NSNumber numberWithInt:34], UVCProcessingUnitControlDigitalMultiplierLimit,
+                                  [NSNumber numberWithInt:35], UVCProcessingUnitControlAutoHue,
+                                  [NSNumber numberWithInt:36], UVCProcessingUnitControlAnalogVideoStandard,
+                                  [NSNumber numberWithInt:37], UVCProcessingUnitControlAnalogLockStatus,
+                                  [NSNumber numberWithInt:38], UVCProcessingUnitControlAutoContrast,
                                   nil
                                 ];
     }
@@ -596,7 +611,6 @@ uvc_control_t     UVCControllerControls[] = {
                                               [NSNumber numberWithInt:kUVCTerminalControlEnableExposureTimeRelative], UVCTerminalControlExposureTimeRelative,
                                               [NSNumber numberWithInt:kUVCTerminalControlEnableFocusAbsolute], UVCTerminalControlFocusAbsolute,
                                               [NSNumber numberWithInt:kUVCTerminalControlEnableFocusRelative], UVCTerminalControlFocusRelative,
-                                              [NSNumber numberWithInt:kUVCTerminalControlEnableAutoFocus], UVCTerminalControlAutoFocus,
                                               [NSNumber numberWithInt:kUVCTerminalControlEnableIrisAbsolute], UVCTerminalControlIrisAbsolute,
                                               [NSNumber numberWithInt:kUVCTerminalControlEnableIrisRelative], UVCTerminalControlIrisRelative,
                                               [NSNumber numberWithInt:kUVCTerminalControlEnableZoomAbsolute], UVCTerminalControlZoomAbsolute,
@@ -605,7 +619,11 @@ uvc_control_t     UVCControllerControls[] = {
                                               [NSNumber numberWithInt:kUVCTerminalControlEnablePanTiltRelative], UVCTerminalControlPanTiltRelative,
                                               [NSNumber numberWithInt:kUVCTerminalControlEnableRollAbsolute], UVCTerminalControlRollAbsolute,
                                               [NSNumber numberWithInt:kUVCTerminalControlEnableRollRelative], UVCTerminalControlRollRelative,
+                                              [NSNumber numberWithInt:kUVCTerminalControlEnableFocusAuto], UVCTerminalControlAutoFocus,
                                               [NSNumber numberWithInt:kUVCTerminalControlEnablePrivacy], UVCTerminalControlPrivacy,
+                                              [NSNumber numberWithInt:kUVCTerminalControlEnableFocusSimple], UVCTerminalControlFocusSimple,
+                                              [NSNumber numberWithInt:kUVCTerminalControlEnableWindow], UVCTerminalControlWindow,
+                                              [NSNumber numberWithInt:kUVCTerminalControlEnableRegionOfInterest], UVCTerminalControlRegionOfInterest,
                                               nil
                                             ];
     }
@@ -642,6 +660,7 @@ uvc_control_t     UVCControllerControls[] = {
                                                     [NSNumber numberWithInt:kUVCProcessingUnitControlEnableDigitalMultiplierLimit], UVCProcessingUnitControlDigitalMultiplierLimit,
                                                     [NSNumber numberWithInt:kUVCProcessingUnitControlEnableAnalogVideoStandard], UVCProcessingUnitControlAnalogVideoStandard,
                                                     [NSNumber numberWithInt:kUVCProcessingUnitControlEnableAnalogVideoLockStatus], UVCProcessingUnitControlAnalogLockStatus,
+                                                    [NSNumber numberWithInt:kUVCProcessingUnitControlEnableAutoContrast], UVCProcessingUnitControlAutoContrast,
                                                     nil
                                                   ];
     }
@@ -678,7 +697,7 @@ uvc_control_t     UVCControllerControls[] = {
     NSUInteger      controlIndex = [self controlIndexForString:controlString];
 
     if ( controlIndex != UVCInvalidControlIndex ) {
-      switch ( UVCControllerControls[controlIndex].unit ) {
+      switch ( UVCControllerControls[controlIndex].unitType ) {
 
         case UVC_INPUT_TERMINAL_ID: {
           // If we weren't able to get control enablement from the interface
@@ -752,6 +771,11 @@ uvc_control_t     UVCControllerControls[] = {
       if ( IORegistryEntryGetName(ioServiceObject, nameBuffer) == KERN_SUCCESS ) {
         _deviceName = [[NSString stringWithUTF8String:nameBuffer] retain];
       }
+      _unitIds = [[NSMutableDictionary alloc] initWithObjectsAndKeys:
+                        [NSNumber numberWithInt:UVC_INPUT_TERMINAL_ID], @"UVC_INPUT_TERMINAL_ID",
+                        [NSNumber numberWithInt:UVC_PROCESSING_UNIT_ID], @"UVC_PROCESSING_UNIT_ID",
+                        nil
+                    ];
       if ( [self findControllerInterfaceForServiceObject:ioServiceObject] ) {
         _controls = [[NSMutableDictionary alloc] init];
       } else {
@@ -769,7 +793,7 @@ uvc_control_t     UVCControllerControls[] = {
     IOUSBDeviceInterface        **deviceInterface = NULL;
     IOCFPlugInInterface         **plugInInterface = NULL;
     SInt32                      score;
-		kern_return_t               krc = IOCreatePlugInInterfaceForService(ioServiceObject, kIOUSBDeviceUserClientTypeID, kIOCFPlugInInterfaceID, &plugInInterface, &score);
+    kern_return_t               krc = IOCreatePlugInInterfaceForService(ioServiceObject, kIOUSBDeviceUserClientTypeID, kIOCFPlugInInterfaceID, &plugInInterface, &score);
 
     if ( (krc != kIOReturnSuccess) || ! plugInInterface ) return NO;
 
@@ -799,14 +823,14 @@ uvc_control_t     UVCControllerControls[] = {
     IOObjectRelease(interfaceIter);
     if ( ! usbInterface ) return NO;
 
-		// Create an intermediate plug-in to use to grab an interface to the device:
-		krc = IOCreatePlugInInterfaceForService(usbInterface, kIOUSBInterfaceUserClientTypeID, kIOCFPlugInInterfaceID, &plugInInterface, &score);
+    // Create an intermediate plug-in to use to grab an interface to the device:
+    krc = IOCreatePlugInInterfaceForService(usbInterface, kIOUSBInterfaceUserClientTypeID, kIOCFPlugInInterfaceID, &plugInInterface, &score);
     IOObjectRelease(usbInterface);
-		if ( (krc != kIOReturnSuccess) || ! plugInInterface ) return NO;
+    if ( (krc != kIOReturnSuccess) || ! plugInInterface ) return NO;
 
-		// Now create the device interface for the interface:
-		hrc = (*plugInInterface)->QueryInterface(plugInInterface, CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID), (LPVOID *)&_controllerInterface);
-		IODestroyPlugInInterface(plugInInterface);
+    // Now create the device interface for the interface:
+    hrc = (*plugInInterface)->QueryInterface(plugInInterface, CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID), (LPVOID *)&_controllerInterface);
+    IODestroyPlugInInterface(plugInInterface);
     if ( (hrc != 0) || ! _controllerInterface ) return NO;
 
     hrc = (*_controllerInterface)->GetInterfaceNumber(_controllerInterface, &_videoInterfaceIndex);
@@ -831,7 +855,21 @@ uvc_control_t     UVCControllerControls[] = {
           UVC_VC_Interface_Header_Descriptor    *vcHeader = (UVC_VC_Interface_Header_Descriptor*)interfaceDescriptor;
           void                                  *basePtr = (void*)vcHeader;
           void                                  *endPtr = basePtr + vcHeader->wTotalLength;
-
+          
+#ifdef DEBUG_WRITE_UVC_HEADER_TO_FILE
+          // Dump the header to a file for debugging:
+          char                                  headerFName[64];
+          
+          snprintf(headerFName, sizeof(headerFName), "uvc-header-%hhu.bin", vcHeader->baInterfaceNr1);
+          
+          FILE                                  *headerFPtr = fopen(headerFName, "w");
+          
+          if ( headerFPtr ) {
+            fwrite(basePtr, vcHeader->wTotalLength, 1, headerFPtr);
+            fclose(headerFPtr);
+          }
+#endif
+          
           // Grab the version of the UVC standard this device implements:
           _uvcVersion = NSSwapLittleShortToHost(vcHeader->bcdUVC);
 
@@ -858,6 +896,7 @@ uvc_control_t     UVCControllerControls[] = {
                   UVC_PU_Header_Descriptor            *puHeader = (UVC_PU_Header_Descriptor*)basePtr;
 
                   if ( puHeader->bControlSize > 0 ) {
+                    [_unitIds setObject:[NSNumber numberWithInt:puHeader->bUnitId] forKey:@"UVC_PROCESSING_UNIT_ID"];
                     _processingUnitControlsAvailable = [[NSData alloc] initWithBytes:&puHeader->bmControls[0] length:puHeader->bControlSize];
                   }
                   break;
@@ -947,7 +986,7 @@ uvc_control_t     UVCControllerControls[] = {
     uvc_control_t           *control = &UVCControllerControls[controlId];
     uint8_t                 scratch;
 
-    if ( [self getData:&scratch ofType:UVC_GET_INFO withLength:1 fromSelector:control->selector atUnitId:control->unit] ) {
+    if ( [self getData:&scratch ofType:UVC_GET_INFO withLength:1 fromSelector:control->selector atUnitId:[[_unitIds objectForKey:control->unitTypeStr] intValue]] ) {
       *capabilities = scratch;
       return YES;
     }
@@ -964,10 +1003,11 @@ uvc_control_t     UVCControllerControls[] = {
     forControl:(NSUInteger)controlId
   {
     uvc_control_t   *control = &UVCControllerControls[controlId];
+    int             unitId = [[_unitIds objectForKey:control->unitTypeStr] intValue];
     
     if ( *lowValue && *highValue ) {
-      if ( [self getData:[*lowValue valuePtr] ofType:UVC_GET_MIN withLength:(int)[*lowValue byteSize] fromSelector:control->selector atUnitId:control->unit] &&
-           [self getData:[*highValue valuePtr] ofType:UVC_GET_MAX withLength:(int)[*highValue byteSize] fromSelector:control->selector atUnitId:control->unit]
+      if ( [self getData:[*lowValue valuePtr] ofType:UVC_GET_MIN withLength:(int)[*lowValue byteSize] fromSelector:control->selector atUnitId:unitId] &&
+           [self getData:[*highValue valuePtr] ofType:UVC_GET_MAX withLength:(int)[*highValue byteSize] fromSelector:control->selector atUnitId:unitId]
       ) {
         *capabilities |= kUVCControlHasRange;
         [(*lowValue = [*lowValue retain]) byteSwapUSBToHostEndian];
@@ -978,7 +1018,7 @@ uvc_control_t     UVCControllerControls[] = {
       }
     }
     if ( *stepSize ) {
-      if ( [self getData:[*stepSize valuePtr] ofType:UVC_GET_RES withLength:(int)[*stepSize byteSize] fromSelector:control->selector atUnitId:control->unit]) {
+      if ( [self getData:[*stepSize valuePtr] ofType:UVC_GET_RES withLength:(int)[*stepSize byteSize] fromSelector:control->selector atUnitId:unitId]) {
         *capabilities |= kUVCControlHasStepSize;
         [(*stepSize = [*stepSize retain]) byteSwapUSBToHostEndian];
       } else {
@@ -986,7 +1026,7 @@ uvc_control_t     UVCControllerControls[] = {
       }
     }
     if ( *defaultValue ) {
-      if ( [self getData:[*defaultValue valuePtr] ofType:UVC_GET_DEF withLength:(int)[*defaultValue byteSize] fromSelector:control->selector atUnitId:control->unit]) {
+      if ( [self getData:[*defaultValue valuePtr] ofType:UVC_GET_DEF withLength:(int)[*defaultValue byteSize] fromSelector:control->selector atUnitId:unitId]) {
         *capabilities |= kUVCControlHasDefaultValue;
         [(*defaultValue = [*defaultValue retain]) byteSwapUSBToHostEndian];
       } else {
@@ -1002,7 +1042,7 @@ uvc_control_t     UVCControllerControls[] = {
   {
     uvc_control_t   *control = &UVCControllerControls[controlId];
      
-    if ( [self getData:[value valuePtr] ofType:UVC_GET_CUR withLength:(int)[value byteSize] fromSelector:control->selector atUnitId:control->unit] ) {
+    if ( [self getData:[value valuePtr] ofType:UVC_GET_CUR withLength:(int)[value byteSize] fromSelector:control->selector atUnitId:[[_unitIds objectForKey:control->unitTypeStr] intValue]] ) {
       [value byteSwapUSBToHostEndian];
       return YES;
     }
@@ -1018,7 +1058,7 @@ uvc_control_t     UVCControllerControls[] = {
     BOOL            rc = NO;
     
     [value byteSwapHostToUSBEndian];
-    rc = [self setData:[value valuePtr] withLength:(int)[value byteSize] forSelector:control->selector atUnitId:control->unit];
+    rc = [self setData:[value valuePtr] withLength:(int)[value byteSize] forSelector:control->selector atUnitId:[[_unitIds objectForKey:control->unitTypeStr] intValue]];
     [value byteSwapUSBToHostEndian];
     return rc;
   }
@@ -1197,6 +1237,7 @@ uvc_control_t     UVCControllerControls[] = {
     if ( _terminalControlsAvailable ) [_terminalControlsAvailable release];
     if ( _processingUnitControlsAvailable ) [_processingUnitControlsAvailable release];
     if ( _controls ) [_controls release];
+    if ( _unitIds ) [_unitIds release];
     if ( _controllerInterface ) {
       [self setIsInterfaceOpen:NO];
       (*_controllerInterface)->Release(_controllerInterface);
@@ -1483,6 +1524,10 @@ uvc_control_t     UVCControllerControls[] = {
     if ( [self hasDefaultValue] ) {
       [asString appendFormat:@"\n  default-value: %@", [_defaultValue stringValue]];
     }
+    
+    UVCValue    *curValue = [self currentValue];
+    if ( curValue ) [asString appendFormat:@"\n  current-value: %@", [curValue stringValue]]; 
+    
     [asString appendString:@"\n}"];
     
     NSString      *outString = [[asString copy] autorelease];
@@ -1512,6 +1557,11 @@ NSString *UVCTerminalControlPanTiltRelative = @"pan-tilt-rel";
 NSString *UVCTerminalControlRollAbsolute = @"roll-abs";
 NSString *UVCTerminalControlRollRelative = @"roll-rel";
 NSString *UVCTerminalControlPrivacy = @"privacy";
+NSString *UVCTerminalControlFocusSimple = @"focus-simple";
+NSString *UVCTerminalControlWindow = @"window";
+NSString *UVCTerminalControlRegionOfInterest = @"region-of-interest";
+
+//
 
 NSString *UVCProcessingUnitControlBacklightCompensation = @"backlight-compensation";
 NSString *UVCProcessingUnitControlBrightness = @"brightness";
@@ -1531,3 +1581,5 @@ NSString *UVCProcessingUnitControlDigitalMultiplierLimit = @"digital-multiplier-
 NSString *UVCProcessingUnitControlAutoHue = @"auto-hue";
 NSString *UVCProcessingUnitControlAnalogVideoStandard = @"analog-video-standard";
 NSString *UVCProcessingUnitControlAnalogLockStatus = @"analog-lock-status";
+NSString *UVCProcessingUnitControlAutoContrast = @"auto-contrast";
+
