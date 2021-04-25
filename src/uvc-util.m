@@ -32,7 +32,7 @@
 
 static NumVersion       UVCUtilVersion = {
                             .majorRev       = 1,
-                            .minorAndBugRev = 0x10,
+                            .minorAndBugRev = 0x20,
                             .stage          = finalStage,
                             .nonRelRev      = 0
                           };
