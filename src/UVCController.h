@@ -46,6 +46,7 @@
   IOUSBInterfaceInterface220    **_controllerInterface;
   
   BOOL                          _isInterfaceOpen;
+  BOOL                          _shouldNotCloseInterface;
   uint8_t                       _videoInterfaceIndex;
   NSMutableDictionary           *_controls;
   NSMutableDictionary           *_unitIds;

@@ -927,21 +927,15 @@ uvc_control_t     UVCControllerControls[] = {
   {
     //
     // Open the interface. This will cause the pipes associated with the endpoints in
-    // the interface descriptor to be instantiated
+    // the interface descriptor to be instantiated.  Then send a control request.
     //
     IOReturn          rc = 0;
-    BOOL              openedByUs = NO;
-
-    if ( ! _isInterfaceOpen ) {
-      rc = (*_controllerInterface)->USBInterfaceOpen(_controllerInterface);
-      if ( rc != kIOReturnSuccess ) return NO;
-      _isInterfaceOpen = openedByUs = YES;
+    
+    if ( ! [self isInterfaceOpen] ) {
+      [self setIsInterfaceOpen:YES];
+      if ( ! [self isInterfaceOpen] ) return NO;
     }
     rc = (*_controllerInterface)->ControlRequest(_controllerInterface, 0, &controlRequest);
-    if ( openedByUs ) {
-      IOReturn        rc2 = (*_controllerInterface)->USBInterfaceClose(_controllerInterface);
-      if ( rc2 == kIOReturnSuccess ) _isInterfaceOpen = NO;
-    }
     return ( rc == kIOReturnSuccess );
   }
 
@@ -1315,10 +1309,16 @@ uvc_control_t     UVCControllerControls[] = {
 
       if ( isInterfaceOpen ) {
         rc = (*_controllerInterface)->USBInterfaceOpen(_controllerInterface);
-        if ( rc == kIOReturnSuccess ) _isInterfaceOpen = YES;
-      } else {
+        if ( rc == kIOReturnSuccess ) {
+          _shouldNotCloseInterface = _isInterfaceOpen = YES;
+        }
+        else if ( rc == kIOReturnExclusiveAccess) {
+          _isInterfaceOpen = YES;
+          _shouldNotCloseInterface = NO;
+        }
+      } else if ( ! _shouldNotCloseInterface ) {
         rc = (*_controllerInterface)->USBInterfaceClose(_controllerInterface);
-        if ( rc == kIOReturnSuccess ) _isInterfaceOpen = NO;
+        if ( rc == kIOReturnSuccess ) _shouldNotCloseInterface = _isInterfaceOpen = NO;
       }
     }
   }
