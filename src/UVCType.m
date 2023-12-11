@@ -1469,7 +1469,7 @@ typedef struct {
 
   - (NSString*) fieldNameAtIndex:(NSUInteger)index
   {
-    if ( index > _fieldCount ) return kUVCTypeComponentTypeInvalid;
+    if ( index > _fieldCount ) return NULL;
     
     return ((UVCTypeField*)_fields)[index].fieldName;
   }
