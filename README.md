@@ -126,7 +126,7 @@ usage:
 
 The source package includes an XCode project file in the top-level directory.  As time goes by — and more releases of XCode are made by Apple — any guarantee of compatibility decreases toward zero.
 
-As an alternative, the code can be built from the command line after XCode has been installed usign the `gcc` command it installs on the system.  From the `src` subdirectory of this project:
+As an alternative, the code can be built from the command line after XCode has been installed using the `gcc` command it installs on the system.  From the `src` subdirectory of this project:
 
 ~~~~
 gcc -o uvc-util -framework IOKit -framework Foundation uvc-util.m UVCController.m UVCType.m UVCValue.m
