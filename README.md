@@ -7,7 +7,7 @@ Control values are implemented using a class (UVCType) that represents byte-pack
 
 Unlike other (GUI-based) utilities, this code only makes use of the IOKit to walk the USB bus, searching for UVC-compliant devices.
 
-The utility's help screen:
+## Features
 
 ~~~~
 usage:
@@ -119,4 +119,12 @@ usage:
          Provide the USB product name (e.g. "AV.io HDMI Video")
 
 ~~~~
+
+## Build & Run
+
+`cd src/`
+
+`gcc -o uvc-util -framework IOKit -framework Foundation uvc-util.m UVCController.m UVCType.m UVCValue.m`
+
+`./uvc-util --list-devices`
 
