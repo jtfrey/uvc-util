@@ -50,7 +50,7 @@ __UVCTypeComponentTypeString(UVCTypeComponentType componentType)
                         "B",
                         "S1",
                         "U1",
-                        "M1"
+                        "M1",
                         "S2",
                         "U2",
                         "M2",
