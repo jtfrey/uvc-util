@@ -26,11 +26,23 @@
 #define VC_PROCESSING_UNIT      0x05
 #define VC_EXTENSION_UNIT       0x06
 
-// On newer versions of Mac OS X, the kIOMasterPortDefault enum has been
-// replaced by kIOMainPortDefault.
-#if (MAC_OS_X_VERSION_MAX_ALLOWED < 120000) // Before macOS 12 Monterey
-  #define kIOMainPortDefault kIOMasterPortDefault
-#endif
+static mach_port_t
+GetMachMainPortDefault()
+{
+  #if (MAC_OS_X_VERSION_MAX_ALLOWED < 120000)
+    // Prior to Mac OS X 12.0 the default port used the const kIOMasterPortDefault
+    // so a binary built against a 12.0 or older SDK has no option but to use
+    // that const.
+    return kIOMasterPortDefault;
+  #else
+    // Builds against Mac OS X 12.0 or later SDKs have both the kIOMasterPortDefault
+    // and kIOMainPortDefault (incompatible) consts present to be used dependent upon
+    // the runtime OS on which the binary is used.  The Apple Objective-C compiler for
+    // Mac OS X 11.0 and later implements the @available() functionality to determine
+    // the OS at runtime.
+		return ((@available(macOS 12.0, *)) ? kIOMainPortDefault : kIOMasterPortDefault);
+	#endif
+}
 
 //
 // UVC descriptor data type definitions:
@@ -1099,7 +1111,7 @@ uvc_control_t     UVCControllerControls[] = {
     CFMutableDictionaryRef  matchingDict = IOServiceMatching(kIOUSBDeviceClassName);
     io_iterator_t           deviceIter;
 
-    if ( IOServiceGetMatchingServices(kIOMainPortDefault, matchingDict, &deviceIter) == KERN_SUCCESS ) {
+    if ( IOServiceGetMatchingServices(GetMachMainPortDefault(), matchingDict, &deviceIter) == KERN_SUCCESS ) {
       io_service_t          device;
 
       while ( (device = IOIteratorNext(deviceIter)) ) {
@@ -1169,7 +1181,7 @@ uvc_control_t     UVCControllerControls[] = {
     CFDictionarySetValue(matchingDict, CFSTR(kIOPropertyMatchKey), propertiesDict);
     CFRelease(propertiesDict);
 
-    io_service_t            device = IOServiceGetMatchingService(kIOMainPortDefault, matchingDict);
+    io_service_t            device = IOServiceGetMatchingService(GetMachMainPortDefault(), matchingDict);
 
     if ( device ) {
       CFNumberRef           vendorIdObj = IORegistryEntrySearchCFProperty(device, kIOUSBPlane, CFSTR(kUSBVendorID), kCFAllocatorDefault, 0);
@@ -1213,7 +1225,7 @@ uvc_control_t     UVCControllerControls[] = {
     CFDictionarySetValue(matchingDict, CFSTR(kIOPropertyMatchKey), propertiesDict);
     CFRelease(propertiesDict);
 
-    io_service_t            device = IOServiceGetMatchingService(kIOMainPortDefault, matchingDict);
+    io_service_t            device = IOServiceGetMatchingService(GetMachMainPortDefault(), matchingDict);
 
     if ( device ) {
       CFNumberRef           locationIdObj = IORegistryEntrySearchCFProperty(device, kIOUSBPlane, CFSTR(kUSBDevicePropertyLocationID), kCFAllocatorDefault, 0);
